@@ -4,8 +4,10 @@ project(GameTest2)
 
 INCLUDE_DIRECTORIES(include/)
 
+#file(GLOB_RECURSE RES_FILES *.frag *.vert *.glsl)
+file(GLOB_RECURSE SHADER_FILES *.frag *.vert *.glsl)
 aux_source_directory(src/ SRC_LIST)
-add_executable(${PROJECT_NAME} ${SRC_LIST})
+add_executable(${PROJECT_NAME} ${SRC_LIST} ${SHADER_FILES})
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "-pthread")

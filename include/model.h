@@ -19,7 +19,8 @@ class Model {
     sptr<Mesh> m_mesh;
     sptr<Material> m_material;
     bool m_visible = true;
-    void render(const float *transform); // camera space transform
+    void render();           // custom transform
+    void renderNoMaterial(); // custom transform
 
   public:
     Model(sptr<Mesh> mesh, sptr<Material> material, double *transform);

@@ -9,6 +9,7 @@ class Texture {
     Texture(const char *path);
     ~Texture();
     void use();
+    void unuse();
 };
 } // namespace Visual
 #endif // TEXTURE_H

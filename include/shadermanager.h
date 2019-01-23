@@ -18,9 +18,10 @@ class ShaderManager {
     }
     const Shader *flatShader() const;
     const std::vector<Shader> *getAll3DShaders() { return &shaders; }
-    //void setViewMatricesForAllShaders(const double *mat);
+    void setViewMatricesForAllShaders(const double *mat);
     void setProjectionMatricesForAllShaders(const float *mat);
-    // void setViewPos(const double *dir);
+    void setShadowMatricesForAllShaders(const float *mat);
+    void setViewPos(const double *dir);
 };
 } // namespace Visual
 #endif // SHADERMANAGER_H

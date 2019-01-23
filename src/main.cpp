@@ -27,20 +27,26 @@ int main() {
         Window window(1024, 768, "Main window", false);
 
         vi::Scene scene;
+        //auto mesh = std::make_shared<vi::Mesh>(vi::MeshPrimitives::icosahedron(vi::MeshData::Type::VTN));
 
-        //auto mesh = std::make_shared<vi::Mesh>(vi::MeshPrimitives::cube(1.f, 1.f, 1.f, vi::MeshData::Type::VTN));
-        auto mesh = std::make_shared<vi::Mesh>(vi::MeshPrimitives::sphere(40, vi::MeshData::Type::VTN));
+        auto cubeMesh = std::make_shared<vi::Mesh>(vi::MeshPrimitives::cube(10.f, 10.f, 1.f, vi::MeshData::Type::VTN));
+        auto sphereMesh = std::make_shared<vi::Mesh>(vi::MeshPrimitives::sphere(40, vi::MeshData::Type::VTN));
         auto texture = std::make_shared<vi::Texture>("../GameTest2/textures/jupiter_diffuse.jpg");
-        auto material = std::make_shared<vi::Material>(texture);
-        glm::dmat4 modelMat(1);
-        vi::Model m(mesh, material, glm::value_ptr(modelMat));
+        auto sphereMat = std::make_shared<vi::Material>(texture);
+        auto cubeMat = std::make_shared<vi::Material>(vi::Color(0.5, 0.3, 0.1));
+
+        glm::dmat4 sphereTransform(1);
+        vi::Model m(sphereMesh, sphereMat, glm::value_ptr(sphereTransform));
+        glm::dmat4 cubeTransform(1);
+        cubeTransform = glm::translate(cubeTransform, glm::dvec3(0, 0, -2));
+        vi::Model m2(cubeMesh, cubeMat, glm::value_ptr(cubeTransform));
+
         scene.addModel(std::move(m));
+        scene.addModel(std::move(m2));
 
         double xx = M_PI_2 - 0.01, yy = -0.5;
         double distance = 5.0;
         while (window.active()) {
-            glm::mat4 projection = glm::perspective(1.f, window.getAspectRatio(), 0.1f, 10000.0f);
-            vi::ShaderManager::get()->setProjectionMatricesForAllShaders(glm::value_ptr(projection));
 
             glm::dvec3 vec = {1, 0, 0};
             xx += Control::mousePos().x * 0.02;
@@ -50,7 +56,13 @@ int main() {
             vec = glm::rotate(vec, yy, glm::dvec3(0, 1, 0));
             vec = glm::rotate(vec, xx, glm::dvec3(0, 0, 1));
             distance *= 1.0 + Control::scrollOffset() * 0.1;
-            glm::dmat4 view = glm::lookAt(vec * distance, glm::dvec3(0.0, 0.0, 0.0), glm::dvec3(0.0, 0.0, 1.0));
+
+            auto pos = vec * distance;
+            glm::dmat4 view = glm::lookAt(pos, glm::dvec3(0.0, 0.0, 0.0), glm::dvec3(0.0, 0.0, 1.0));
+            vi::ShaderManager::get()->setViewMatricesForAllShaders(glm::value_ptr(view));
+            glm::mat4 projection = glm::perspective(1.f, window.getAspectRatio(), 0.1f, 10000.0f);
+            vi::ShaderManager::get()->setProjectionMatricesForAllShaders(glm::value_ptr(projection));
+            vi::ShaderManager::get()->setViewPos(glm::value_ptr(pos));
 
             scene.render(view);
             window.refresh();

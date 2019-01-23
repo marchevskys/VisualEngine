@@ -1,6 +1,7 @@
 #ifndef VISUALSCENE_H
 #define VISUALSCENE_H
 
+#include "camera.h"
 #include "model.h"
 
 #include <glm/glm.hpp>
@@ -18,7 +19,7 @@ namespace Visual {
 
 class Material;
 class MeshData;
-
+class ShadowMap;
 class Scene {
 
   public:
@@ -32,12 +33,13 @@ class Scene {
 
   private:
     struct ViewSpaceOpaqueModel {
-        glm::mat4 m_matrix;
+        //glm::mat4 m_matrix;
         uptr<Model> m_model;
         ViewSpaceOpaqueModel(uptr<Model> model) { m_model = std::move(model); }
     };
 
     std::vector<ViewSpaceOpaqueModel> m_models;
+    uptr<ShadowMap> m_shadow;
 };
 } // namespace Visual
 #endif // VISUALSCENE_H

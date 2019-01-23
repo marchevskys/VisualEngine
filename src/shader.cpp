@@ -2,7 +2,7 @@
 #include "logger.h"
 
 #include <GL/glew.h>
-//#include <algorithm>
+
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -97,14 +97,41 @@ void Shader::use() const {
     glUseProgram(m_program);
 }
 
-void Shader::setMat4(int index, const float *const mat) const {
-    glUniformMatrix4fv(index, 1, GL_FALSE, mat);
+void Shader::setMat4(int location, const float *const mat) const {
+    glUniformMatrix4fv(location, 1, GL_FALSE, mat);
 }
 
-void Shader::setMat4(const char *var, const float *const mat) const {
-    auto loc = glGetUniformLocation(m_program, var);
-    glUniformMatrix4fv(loc, 1, GL_FALSE, mat);
+void Shader::setMat4(int location, const double *const mat) const {
+
+    float fMat[16];
+    for (int i = 0; i < 16; i++)
+        fMat[i] = static_cast<float>(mat[i]);
+    glUniformMatrix4fv(location, 1, GL_FALSE, fMat);
 }
+
+void Shader::setVec3(int location, const double *const vec) const {
+    float fVec[16];
+    for (int i = 0; i < 3; i++)
+        fVec[i] = static_cast<float>(vec[i]);
+    glUniform3fv(location, 1, fVec);
+}
+
+void Shader::setVec3(int location, const float *const vec) const {
+    glUniform3fv(location, 1, vec);
+}
+
+void Shader::setInt(int location, const int value) const {
+    glUniform1i(location, value);
+}
+
+void Shader::setInt(const char *name, const int value) const {
+    glUniform1i(glGetUniformLocation(m_program, name), value);
+}
+
+//void Shader::setMat4(const char *var, const float *const mat) const {
+//    auto loc = glGetUniformLocation(m_program, var);
+//    glUniformMatrix4fv(loc, 1, GL_FALSE, mat);
+//}
 
 Shader::GLint Shader::getLocation(const char *var) const { return glGetUniformLocation(m_program, var); }
 

@@ -25,12 +25,15 @@ Model::Model(Mesh &&mesh, Material &&material, double *transform) {
     m_transform = transform;
 }
 
-void Model::render(const float *viewSpaceTransform) {
-    if (true) {
-        m_material->use();
-        m_material->m_shader->setMat4(0, viewSpaceTransform);
-        m_mesh->render();
-    }
+void Model::render() {
+    m_material->use();
+    m_material->m_shader->setMat4(0, m_transform);
+    m_mesh->render();
+}
+
+void Model::renderNoMaterial() {
+    m_material->m_shader->setMat4(0, m_transform);
+    m_mesh->render();
 }
 
 } // namespace Visual
