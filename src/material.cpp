@@ -1,12 +1,12 @@
 #include "material.h"
 #include "shader.h"
-#include "shadermanager.h"
+
 #include "texture.h"
 namespace Visual {
 static const Color black{0, 0, 0};
 
 Visual::Material::Material() {
-    m_shader = ShaderManager::get()->flatShader();
+
     m_isTransparent = false;
 }
 

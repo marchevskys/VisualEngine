@@ -12,12 +12,12 @@ struct Color {
     const float *get() const { return &r; }
 };
 class Material {
-    friend class Model;
+
+  public:
     const Shader *m_shader;
     std::shared_ptr<Texture> m_texture;
     bool m_isTransparent;
 
-  public:
     Color m_color;
     Material();
     Material(std::shared_ptr<Texture> tex);

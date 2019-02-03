@@ -9,7 +9,7 @@ class Shader {
     GLuint m_program;
 
   public:
-    Shader(const char *vertex_file_path, const char *fragment_file_path);
+    Shader(const char *vPath, const char *fPath, const char *gPath = nullptr);
     void use() const;
     void setMat4(int index, const float *const mat) const;
     //void setMat4(const char *var, const float *const mat) const;
@@ -24,5 +24,35 @@ class Shader {
 
     ~Shader();
 };
+
+class Shader3d : public Shader {
+  protected:
+    Shader3d(const char *v, const char *f) : Shader(v, f) {}
+};
+
+class ShaderShadow : public Shader3d {
+  protected:
+    ShaderShadow(const char *v, const char *f) : Shader3d(v, f){};
+    ~ShaderShadow(){};
+
+  public:
+    static Shader3d *get() {
+        static ShaderShadow shader("shadow.vert", "shadow.frag");
+        return &shader;
+    }
+};
+
+class ShaderPBR : public Shader3d {
+  protected:
+    ShaderPBR(const char *v, const char *f) : Shader3d(v, f){};
+    ~ShaderPBR(){};
+
+  public:
+    static Shader3d *get() {
+        static ShaderPBR shader("PBR.vert", "PBR.frag");
+        return &shader;
+    }
+};
+
 } // namespace Visual
 #endif // SHADER_H

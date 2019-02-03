@@ -14,27 +14,22 @@ class Material;
 class Scene;
 
 class Model {
-    friend class Scene;
+    Model &assign(const Model &other);
+
+  public:
+    Scene *m_scene;
     double *m_transform;
     sptr<Mesh> m_mesh;
     sptr<Material> m_material;
-    bool m_visible = true;
-    void render();           // custom transform
-    void renderNoMaterial(); // custom transform
 
-  public:
-    Model(sptr<Mesh> mesh, sptr<Material> material, double *transform);
-    Model(Mesh &&mesh, Material &&material, double *transform);
+    Model(Scene *scene, sptr<Mesh> mesh, sptr<Material> material, double *transform);
+    Model(Scene *scene, Mesh &&mesh, Material &&material, double *transform);
+    Model(Model &&other);
+    Model(const Model &other);
+    Model &operator=(const Model &other);
 
-    void setTransformPtr(double *tr) { m_transform = tr; }
-    void setVisibility(bool visibility) { m_visible = visibility; }
-    void setMaterial(sptr<Material> mat) { m_material = mat; }
-    void setMesh(sptr<Mesh> mesh) { m_mesh = mesh; }
-
-    void getTransormPtr(double *tr) { m_transform = tr; }
-    bool getVisibility() { return m_visible; }
-    sptr<Material> getMaterial() { return m_material; }
-    sptr<Mesh> getMesh() { return m_mesh; }
+    void render();
+    void renderNoMaterial();
 };
 } // namespace Visual
 #endif // MODEL_H

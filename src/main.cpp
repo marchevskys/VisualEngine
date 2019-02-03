@@ -6,9 +6,9 @@
 #include "material.h"
 #include "mesh.h"
 #include "meshdata.h"
-#include "shadermanager.h"
+
+#include "scene.h"
 #include "texture.h"
-#include "visualscene.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/random.hpp>
@@ -36,13 +36,10 @@ int main() {
         auto cubeMat = std::make_shared<vi::Material>(vi::Color(0.5, 0.3, 0.1));
 
         glm::dmat4 sphereTransform(1);
-        vi::Model m(sphereMesh, sphereMat, glm::value_ptr(sphereTransform));
+        vi::Model m(&scene, sphereMesh, sphereMat, glm::value_ptr(sphereTransform));
         glm::dmat4 cubeTransform(1);
         cubeTransform = glm::translate(cubeTransform, glm::dvec3(0, 0, -2));
-        vi::Model m2(cubeMesh, cubeMat, glm::value_ptr(cubeTransform));
-
-        scene.addModel(std::move(m));
-        scene.addModel(std::move(m2));
+        vi::Model m2(&scene, cubeMesh, cubeMat, glm::value_ptr(cubeTransform));
 
         double xx = M_PI_2 - 0.01, yy = -0.5;
         double distance = 5.0;
@@ -57,14 +54,7 @@ int main() {
             vec = glm::rotate(vec, xx, glm::dvec3(0, 0, 1));
             distance *= 1.0 + Control::scrollOffset() * 0.1;
 
-            auto pos = vec * distance;
-            glm::dmat4 view = glm::lookAt(pos, glm::dvec3(0.0, 0.0, 0.0), glm::dvec3(0.0, 0.0, 1.0));
-            vi::ShaderManager::get()->setViewMatricesForAllShaders(glm::value_ptr(view));
-            glm::mat4 projection = glm::perspective(1.f, window.getAspectRatio(), 0.1f, 10000.0f);
-            vi::ShaderManager::get()->setProjectionMatricesForAllShaders(glm::value_ptr(projection));
-            vi::ShaderManager::get()->setViewPos(glm::value_ptr(pos));
-
-            scene.render(view);
+            //scene.render(view);
             window.refresh();
         }
     } catch (const std::exception &except) {
