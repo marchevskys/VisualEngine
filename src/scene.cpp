@@ -30,10 +30,10 @@ class ModelContainer {
     std::vector<Model *> m_models;
     struct ModelComparator {
         bool operator()(const Model *m1, const Model *m2) {
-            bool shaderLess = m1->m_material->m_shader < m2->m_material->m_shader;
-            bool meshLess = m1->m_mesh < m2->m_mesh;
-            bool materialLess = m1->m_material < m2->m_material;
-            return shaderLess || meshLess || materialLess;
+            //bool shaderLess = m1->m_material->m_shader < m2->m_material->m_shader;
+            //bool meshLess = m1->m_mesh < m2->m_mesh;
+            //bool materialLess = m1->m_material < m2->m_material;
+            //return shaderLess || meshLess || materialLess;
         }
     };
 
@@ -84,8 +84,9 @@ void Scene::addModel(Model *model) {
 
 void Scene::render(Camera &camera) {
     std::lock_guard<std::mutex> lock(RenderLocker); // lock the thread to avoid multi-thread shader handling
+
     for (auto &m : m_container.get()->m_models) {
-        m->render();
+        //m->render();
     }
 }
 

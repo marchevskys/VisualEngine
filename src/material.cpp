@@ -1,38 +1,17 @@
 #include "material.h"
 #include "shader.h"
-
 #include "texture.h"
+
 namespace Visual {
-static const Color black{0, 0, 0};
 
-Visual::Material::Material() {
-
-    m_isTransparent = false;
+MaterialPBR::MaterialPBR() {
+    m_shader = ShaderPBR::get();
 }
 
-Material::Material(std::shared_ptr<Texture> tex) : Material() {
-    m_texture = tex;
-}
-
-Material::Material(Color col) : Material() {
-    m_color = col;
-}
-
-std::shared_ptr<Texture> Material::getTexture() {
-    return m_texture;
-}
-
-void Material::use() {
-    m_shader->use();
-    m_shader->setVec3(10, m_color.get());
-    //m_shader->setVec3(10, black.get()); // 10 is RGB color
-    //    if (auto &tex = m_texture) {
-    //        tex->use();
-    //        m_shader->setVec3(10, black.get()); // 10 is RGB color
-    //    } else {
-    //        tex->unuse();
-    //        m_shader->setVec3(10, m_color.get());
-    //    }
+void MaterialPBR::apply() {
+    const ShaderPBR *sh = static_cast<const ShaderPBR *>(m_shader); // it is always ShaderPBR, no reason to check by dynamic_cast
+    sh->setColor(m_color.get());
+    sh->setRoughness(m_roughness);
 }
 
 } // namespace Visual

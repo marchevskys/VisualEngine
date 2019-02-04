@@ -3,7 +3,7 @@
 #include <memory>
 namespace Visual {
 
-class Shader;
+class Shader3d;
 class Texture;
 
 struct Color {
@@ -11,19 +11,21 @@ struct Color {
     Color(float _r = 0.5f, float _g = 0.5f, float _b = 0.5f) : r(_r), g(_g), b(_b) {}
     const float *get() const { return &r; }
 };
-class Material {
+class IMaterial {
+  protected:
+    const Shader3d *m_shader;
 
   public:
-    const Shader *m_shader;
-    std::shared_ptr<Texture> m_texture;
-    bool m_isTransparent;
+    virtual ~IMaterial(){};
+};
 
+class MaterialPBR : public IMaterial {
+  public:
     Color m_color;
-    Material();
-    Material(std::shared_ptr<Texture> tex);
-    Material(Color col);
-    std::shared_ptr<Texture> getTexture();
-    void use();
+    float m_metallic, m_roughness;
+    MaterialPBR();
+    ~MaterialPBR(){};
+    void apply();
 };
 
 } // namespace Visual

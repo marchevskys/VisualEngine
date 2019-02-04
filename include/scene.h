@@ -11,15 +11,11 @@
 #include <set>
 #include <vector>
 
-template <class T>
-using sptr = std::shared_ptr<T>;
-template <class T>
-using uptr = std::unique_ptr<T>;
-
 namespace Visual {
 
 class ModelContainer;
 class Scene {
+    void sortModels();
 
   public:
     Scene();
@@ -30,7 +26,6 @@ class Scene {
     void addModel(Model *model);
     void removeModel(Model *model);
     void moveModel(Model *oldModel, Model *newModel);
-    void sortModels();
 
     void render(Camera &camera);
 
@@ -38,7 +33,7 @@ class Scene {
     //std::vector<Model *> m_models;
     void sortVector();
 
-    uptr<ModelContainer> m_container;
+    std::unique_ptr<ModelContainer> m_container;
 };
 } // namespace Visual
 #endif // VISUALSCENE_H

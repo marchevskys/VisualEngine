@@ -1,50 +1,61 @@
 #ifndef SHADER_H
 #define SHADER_H
-
+#include <set>
 namespace Visual {
 
 class Shader {
+  protected:
     typedef unsigned int GLuint;
     typedef int GLint;
     GLuint m_program;
 
-  public:
+    //public:
     Shader(const char *vPath, const char *fPath, const char *gPath = nullptr);
+    Shader(Shader &&other) = delete;
+    Shader(const Shader &other) = delete;
+    ~Shader();
     void use() const;
-    void setMat4(int index, const float *const mat) const;
-    //void setMat4(const char *var, const float *const mat) const;
-    void setMat4(int index, const double *const mat) const;
-    void setVec3(int index, const double *const vec) const;
-    void setVec3(int index, const float *const vec) const;
-    void setInt(int index, const int value) const;
-    void setInt(const char *name, const int value) const;
-
+    void setInt(int location, const int value) const;
+    void setFloat(int location, const float value) const;
+    void setVec3(int location, const double *const vec) const;
+    void setVec3(int location, const float *const vec) const;
+    void setMat4(int location, const float *const mat) const;
+    void setMat4(int location, const double *const mat) const;
     GLuint getProgram() const { return m_program; }
     GLint getLocation(const char *var) const;
+    static std::set<Shader *> registeredShaders;
+};
 
-    ~Shader();
+class ShaderShadow : public Shader {
+  protected:
+    GLuint ViewProjectionId;
+    ShaderShadow(const char *v, const char *f) : Shader(v, f){};
+    ~ShaderShadow(){};
+
+  public:
+    static Shader *get() {
+        static ShaderShadow shader("shadow.vert", "shadow.frag");
+        return &shader;
+    }
+    inline void setViewProjection(const float *mat) const { setMat4(ViewProjectionId, mat); };
 };
 
 class Shader3d : public Shader {
   protected:
+    GLuint ViewId, projectionId, modelId;
     Shader3d(const char *v, const char *f) : Shader(v, f) {}
-};
-
-class ShaderShadow : public Shader3d {
-  protected:
-    ShaderShadow(const char *v, const char *f) : Shader3d(v, f){};
-    ~ShaderShadow(){};
-
-  public:
-    static Shader3d *get() {
-        static ShaderShadow shader("shadow.vert", "shadow.frag");
-        return &shader;
-    }
+    virtual ~Shader3d(){};
 };
 
 class ShaderPBR : public Shader3d {
   protected:
-    ShaderPBR(const char *v, const char *f) : Shader3d(v, f){};
+    GLuint colorId, roughnessId;
+    ShaderPBR(const char *v, const char *f) : Shader3d(v, f) {
+
+        colorId = getLocation("material.color");
+        roughnessId = getLocation("material.roughness");
+    }
+
     ~ShaderPBR(){};
 
   public:
@@ -52,6 +63,8 @@ class ShaderPBR : public Shader3d {
         static ShaderPBR shader("PBR.vert", "PBR.frag");
         return &shader;
     }
+    inline void setColor(const float *color) const { setVec3(colorId, color); };
+    inline void setRoughness(const float roughness) const { setFloat(colorId, roughness); };
 };
 
 } // namespace Visual

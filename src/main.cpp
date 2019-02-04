@@ -31,15 +31,13 @@ int main() {
 
         auto cubeMesh = std::make_shared<vi::Mesh>(vi::MeshPrimitives::cube(10.f, 10.f, 1.f, vi::MeshData::Type::VTN));
         auto sphereMesh = std::make_shared<vi::Mesh>(vi::MeshPrimitives::sphere(40, vi::MeshData::Type::VTN));
-        auto texture = std::make_shared<vi::Texture>("../GameTest2/textures/jupiter_diffuse.jpg");
-        auto sphereMat = std::make_shared<vi::Material>(texture);
-        auto cubeMat = std::make_shared<vi::Material>(vi::Color(0.5, 0.3, 0.1));
+        //auto texture = std::make_shared<vi::Texture>("../GameTest2/textures/jupiter_diffuse.jpg");
 
         glm::dmat4 sphereTransform(1);
-        vi::Model m(&scene, sphereMesh, sphereMat, glm::value_ptr(sphereTransform));
+        //vi::Model m(&scene, sphereMesh, sphereMat, glm::value_ptr(sphereTransform));
         glm::dmat4 cubeTransform(1);
         cubeTransform = glm::translate(cubeTransform, glm::dvec3(0, 0, -2));
-        vi::Model m2(&scene, cubeMesh, cubeMat, glm::value_ptr(cubeTransform));
+        //vi::Model m2(&scene, cubeMesh, cubeMat, glm::value_ptr(cubeTransform));
 
         double xx = M_PI_2 - 0.01, yy = -0.5;
         double distance = 5.0;

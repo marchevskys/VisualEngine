@@ -2,34 +2,28 @@
 #define MODEL_H
 #include <memory>
 
-template <class T>
-using sptr = std::shared_ptr<T>;
-template <class T>
-using uptr = std::unique_ptr<T>;
-
 namespace Visual {
 
 class Mesh;
-class Material;
+class IMaterial;
 class Scene;
 
 class Model {
-    Model &assign(const Model &other);
+    friend class Scene;
 
   public:
-    Scene *m_scene;
-    double *m_transform;
-    sptr<Mesh> m_mesh;
-    sptr<Material> m_material;
-
-    Model(Scene *scene, sptr<Mesh> mesh, sptr<Material> material, double *transform);
-    Model(Scene *scene, Mesh &&mesh, Material &&material, double *transform);
+    Model(Scene *scene, std::shared_ptr<Mesh> mesh, std::shared_ptr<IMaterial> material, double *transform);
+    Model(Scene *scene, Mesh &&mesh, IMaterial &&material, double *transform);
     Model(Model &&other);
     Model(const Model &other);
     Model &operator=(const Model &other);
 
-    void render();
-    void renderNoMaterial();
+  private:
+    Model &assign(const Model &other);
+    Scene *m_scene;
+    double *m_transform;
+    std::shared_ptr<Mesh> m_mesh;
+    std::shared_ptr<IMaterial> m_material;
 };
 } // namespace Visual
 #endif // MODEL_H
