@@ -31,9 +31,10 @@ Model::Model(Scene *scene, std::shared_ptr<Mesh> mesh, std::shared_ptr<IMaterial
     scene->addModel(this);
 }
 
-Model::Model(Scene *scene, Mesh &&mesh, IMaterial &&material, double *transform) {
+template <class MaterialType>
+Model::Model(Scene *scene, Mesh &&mesh, MaterialType &&material, double *transform) {
     m_mesh = std::make_shared<Mesh>(std::move(mesh));
-    m_material = std::make_shared<IMaterial>(std::move(material));
+    m_material = std::make_shared<MaterialType>(std::move(material));
     m_transform = transform;
     scene->addModel(this);
 }

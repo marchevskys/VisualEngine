@@ -1,6 +1,6 @@
 #ifndef MESH_H
 #define MESH_H
-namespace Visual{
+namespace Visual {
 class MeshData;
 class Mesh {
     typedef unsigned int GLuint;
@@ -13,11 +13,14 @@ class Mesh {
     Mesh(const MeshData &data);
     Mesh(MeshData &&data);
     void setMeshData(const MeshData &data);
-    void render() const;
+    void bindAndDraw() const;
+    void bind() const;
+    void draw() const;
+    static void draw(const Mesh &m);
     ~Mesh();
 
     // define mesh as no-copyable
     Mesh(const Mesh &rhc) = delete;
 };
-}
+} // namespace Visual
 #endif // MESH_H

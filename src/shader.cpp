@@ -3,6 +3,7 @@
 
 #include <GL/glew.h>
 
+#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -82,6 +83,8 @@ Shader::Shader(const char *vPath, const char *fPath, const char *gPath) {
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+
+    use();
 }
 
 void Shader::use() const {
@@ -119,7 +122,11 @@ void Shader::setMat4(int location, const double *const mat) const {
     glUniformMatrix4fv(location, 1, GL_FALSE, fMat);
 }
 
-Shader::GLint Shader::getLocation(const char *var) const { return glGetUniformLocation(m_program, var); }
+Shader::GLint Shader::getLocation(const char *var) const {
+    GLint location = glGetUniformLocation(m_program, var);
+    assert(!location);
+    return location;
+}
 
 Shader::~Shader() {
     glDeleteProgram(m_program);

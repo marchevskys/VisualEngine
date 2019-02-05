@@ -16,29 +16,27 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/string_cast.hpp>
 
-#include <chrono>
+#include <cassert>
 #include <memory>
 #include <numeric>
-
 using namespace std;
 namespace vi = Visual;
 int main() {
+
     try {
         Window window(1024, 768, "Main window", false);
 
         vi::Scene scene;
         //auto mesh = std::make_shared<vi::Mesh>(vi::MeshPrimitives::icosahedron(vi::MeshData::Type::VTN));
 
-        auto cubeMesh = std::make_shared<vi::Mesh>(vi::MeshPrimitives::cube(10.f, 10.f, 1.f, vi::MeshData::Type::VTN));
         auto sphereMesh = std::make_shared<vi::Mesh>(vi::MeshPrimitives::sphere(40, vi::MeshData::Type::VTN));
-        //auto texture = std::make_shared<vi::Texture>("../GameTest2/textures/jupiter_diffuse.jpg");
+        auto texture = std::make_shared<vi::Texture>("../GameTest2/textures/jupiter_diffuse.jpg");
+        auto mat = std::make_shared<vi::MaterialPBR>();
 
         glm::dmat4 sphereTransform(1);
-        //vi::Model m(&scene, sphereMesh, sphereMat, glm::value_ptr(sphereTransform));
-        glm::dmat4 cubeTransform(1);
-        cubeTransform = glm::translate(cubeTransform, glm::dvec3(0, 0, -2));
-        //vi::Model m2(&scene, cubeMesh, cubeMat, glm::value_ptr(cubeTransform));
+        vi::Model m(&scene, sphereMesh, mat, glm::value_ptr(sphereTransform));
 
+        vi::Camera camera(vec3d(10, 0, 0), vec3d(0, 0, 0));
         double xx = M_PI_2 - 0.01, yy = -0.5;
         double distance = 5.0;
         while (window.active()) {
@@ -52,7 +50,7 @@ int main() {
             vec = glm::rotate(vec, xx, glm::dvec3(0, 0, 1));
             distance *= 1.0 + Control::scrollOffset() * 0.1;
 
-            //scene.render(view);
+            scene.render(camera);
             window.refresh();
         }
     } catch (const std::exception &except) {

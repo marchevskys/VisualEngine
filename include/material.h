@@ -16,7 +16,9 @@ class IMaterial {
     const Shader3d *m_shader;
 
   public:
+    inline const Shader3d *getShader() const { return m_shader; }
     virtual ~IMaterial(){};
+    virtual void apply() const = 0;
 };
 
 class MaterialPBR : public IMaterial {
@@ -25,7 +27,7 @@ class MaterialPBR : public IMaterial {
     float m_metallic, m_roughness;
     MaterialPBR();
     ~MaterialPBR(){};
-    void apply();
+    void apply() const final;
 };
 
 } // namespace Visual

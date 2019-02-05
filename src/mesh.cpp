@@ -95,9 +95,20 @@ void Mesh::setMeshData(const MeshData &mData) {
     DLOG("Mesh created");
 }
 
-void Mesh::render() const {
+void Mesh::bind() const {
+    glBindVertexArray(m_VAO);
+}
+
+void Mesh::draw() const {
+    glDrawElements(GL_TRIANGLES, m_IndexCount, GL_UNSIGNED_INT, nullptr);
+}
+void Mesh::bindAndDraw() const {
     glBindVertexArray(m_VAO);
     glDrawElements(GL_TRIANGLES, m_IndexCount, GL_UNSIGNED_INT, nullptr);
+}
+
+void Mesh::draw(const Mesh &m) {
+    m.draw();
 };
 
 Mesh::~Mesh() {
