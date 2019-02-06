@@ -7,7 +7,7 @@
 namespace Visual {
 void Camera::updateProjection() { m_projection = glm::perspective(m_fov, m_aspectRatio, m_near, m_far); }
 
-Camera::Camera(vec3d pos, vec3d aim) {
+Camera::Camera(vec3d pos, vec3d aim) : m_pos(pos), m_aim(aim), m_up({0.0, 0.0, 1.0}) {
     updateProjection();
 }
 

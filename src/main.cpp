@@ -27,18 +27,19 @@ int main() {
         Window window(1024, 768, "Main window", false);
 
         vi::Scene scene;
-        //auto mesh = std::make_shared<vi::Mesh>(vi::MeshPrimitives::icosahedron(vi::MeshData::Type::VTN));
 
         auto sphereMesh = std::make_shared<vi::Mesh>(vi::MeshPrimitives::sphere(40, vi::MeshData::Type::VTN));
-        auto texture = std::make_shared<vi::Texture>("../GameTest2/textures/jupiter_diffuse.jpg");
-        auto mat = std::make_shared<vi::MaterialPBR>();
+        //auto texture = std::make_shared<vi::Texture>("../GameTest2/textures/jupiter_diffuse.jpg");
+        vi::Color c{0.1, 0.3, 0.7};
+        auto mat = std::make_shared<vi::MaterialPBR>(c);
 
         glm::dmat4 sphereTransform(1);
         vi::Model m(&scene, sphereMesh, mat, glm::value_ptr(sphereTransform));
 
-        vi::Camera camera(vec3d(10, 0, 0), vec3d(0, 0, 0));
+        vi::Camera camera(vec3d(10, 10, 0), vec3d(0, 0, 0));
         double xx = M_PI_2 - 0.01, yy = -0.5;
         double distance = 5.0;
+        DLOG("main loop");
         while (window.active()) {
 
             glm::dvec3 vec = {1, 0, 0};
@@ -50,6 +51,8 @@ int main() {
             vec = glm::rotate(vec, xx, glm::dvec3(0, 0, 1));
             distance *= 1.0 + Control::scrollOffset() * 0.1;
 
+            camera.setAspectRatio(window.getAspectRatio());
+            camera.set(vec * distance, glm::dvec3(0.0, 0.0, 0.0));
             scene.render(camera);
             window.refresh();
         }

@@ -18,8 +18,8 @@ class WindowManager {
         // ------------------------------
         glfwInit();
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 #ifdef __APPLE__
@@ -61,15 +61,15 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     Window::currentWindow->resize(width, height);
-    //glViewport(0, 0, width, height);
+    glViewport(0, 0, width, height);
     Window::currentWindow->getAspectRatio();
 }
 
 void Window::resize(int width, int height) {
 
     if (m_fullScreen) {
-        //primaryScreenWidth = width;
-        //primaryScreenHeight = height;
+        primaryScreenWidth = width;
+        primaryScreenHeight = height;
     } else {
         m_WindowedWidth = width;
         m_WindowedHeight = height;
@@ -155,8 +155,8 @@ void Window::refresh() {
     glfwSetCursorPosCallback(m_window, Control::mouse_callback); // mouse func
     glfwSetScrollCallback(m_window, Control::scroll_callback);   // scroll func
 
-    //glClearColor(0.10f, 0.1f, 0.13f, 1.0f);
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(0.10f, 0.1f, 0.13f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Window::setTitle(const char *title) {

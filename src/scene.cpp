@@ -5,8 +5,11 @@
 #include "mesh.h"
 #include "shader.h"
 
+//#include <GL/glew.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/random.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/rotate_vector.hpp>
@@ -23,6 +26,8 @@ static std::mutex RenderLocker;
 #define IDENTITY \
     { 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 }
 namespace Visual {
+
+using glm::value_ptr;
 
 class ModelContainer {
   public:
@@ -99,11 +104,6 @@ class ModelContainer {
         }
     }
     void forEveryModel(std::function<void(Model *)> func) {
-        /*        for (auto &shaderGroup : m_container.vec)
-                    for (auto &meshGroup : shaderGroup.vec)
-                        for (auto &materialGroup : meshGroup.vec)
-                            for (auto &model : materialGroup.vec)
-                                func(model);*/
         m_data.forEvery([&func](ShaderGroup &shaderGroup) {
             shaderGroup.forEvery([&func](MeshGroup &meshGroup) {
                 meshGroup.forEvery([&func](MaterialGroup &materailGroup) {
@@ -127,6 +127,7 @@ void Scene::removeModel(Model *model) {
 }
 
 void Scene::moveModel(Model *oldModel, Model *newModel) {
+    THROW("Temporary unvailable");
 }
 
 void Scene::addModel(Model *model) {
@@ -136,19 +137,27 @@ void Scene::addModel(Model *model) {
 
 void Scene::render(Camera &camera) {
     std::lock_guard<std::mutex> lock(RenderLocker); // lock the thread to avoid multi-thread shader handling
+
+    glm::vec4 lightDir{glm::normalize(glm::vec3(1, 1, 1)), 0};
+
     const auto &container = m_container.get();
     using MC = ModelContainer;
 
-    container->m_data.forEvery([](MC::ShaderGroup &shaderGroup) { // make nested loops great again (@Nikolay)
-        const Shader3d *currentShader = shaderGroup.arg;
-        currentShader->use();
+    container->m_data.forEvery([&](MC::ShaderGroup &shaderGroup) { // make nested loops great again (@Nikolay)
+        const Shader3d *s = shaderGroup.arg;
+        s->use();
+        s->setView(value_ptr(camera.getView()));
+        s->setProjection(value_ptr(camera.getProjection()));
+        s->setViewPos(value_ptr(camera.getPos()));
+        s->setLightDir(value_ptr(lightDir));
+
         shaderGroup.forEvery([&](MC::MeshGroup &meshGroup) {
             meshGroup.arg->bind();
             meshGroup.forEvery([&](MC::MaterialGroup &materialGroup) {
                 materialGroup.arg->apply();
                 materialGroup.forEvery([&](Model *m) {
-                    currentShader->setModel(m->m_transform);
-                    m->getMesh()->draw(); // fuck... worth it?
+                    s->setModel(m->m_transform);
+                    m->getMesh()->draw();
                 });
             });
         });
@@ -156,6 +165,7 @@ void Scene::render(Camera &camera) {
 }
 
 Scene::~Scene() {
+    const auto &arr = m_container.get()->m_data;
 }
 
 } // namespace Visual

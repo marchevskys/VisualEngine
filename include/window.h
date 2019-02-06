@@ -1,9 +1,10 @@
 #ifndef WINDOW_H
 #define WINDOW_H
-#include <vector>
+#include "framebuffer.h"
 
+#include <vector>
 class GLFWwindow;
-class Window {
+class Window : public Visual::FrameBuffer {
     friend void processInput(GLFWwindow *window);
     friend void framebuffer_size_callback(GLFWwindow *window, int width, int height);
     friend class WindowManager;

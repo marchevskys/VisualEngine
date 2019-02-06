@@ -25,7 +25,7 @@ class MaterialPBR : public IMaterial {
   public:
     Color m_color;
     float m_metallic, m_roughness;
-    MaterialPBR();
+    MaterialPBR(Color c = Color());
     ~MaterialPBR(){};
     void apply() const final;
 };

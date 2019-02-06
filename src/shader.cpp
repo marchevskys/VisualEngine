@@ -38,9 +38,9 @@ GLuint shaderFromCode(const std::string &code, GLint type) {
     glGetShaderiv(shader, GL_COMPILE_STATUS, &Result);
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &InfoLogLength);
     if (InfoLogLength > 0) {
-        std::vector<char> VertexShaderErrorMessage(InfoLogLength + 1);
-        glGetShaderInfoLog(shader, InfoLogLength, nullptr, &VertexShaderErrorMessage[0]);
-        printf("%s\n", &VertexShaderErrorMessage[0]);
+        std::vector<char> errorMessage(InfoLogLength + 1);
+        glGetShaderInfoLog(shader, InfoLogLength, nullptr, &errorMessage[0]);
+        std::cerr << &errorMessage[0] << std::endl;
         THROW();
     }
     return shader;
@@ -69,7 +69,7 @@ Shader::Shader(const char *vPath, const char *fPath, const char *gPath) {
     if (InfoLogLength > 0) {
         std::vector<char> ProgramErrorMessage(InfoLogLength + 1);
         glGetProgramInfoLog(m_program, InfoLogLength, nullptr, &ProgramErrorMessage[0]);
-        printf("%s\n", &ProgramErrorMessage[0]);
+        std::cerr << &ProgramErrorMessage[0] << std::endl;
         THROW();
     }
 
@@ -106,6 +106,10 @@ void Shader::setVec3(int location, const double *const vec) const {
     glUniform3fv(location, 1, fVec);
 }
 
+void Shader::setVec4(int location, const float *const vec) const {
+    glUniform4fv(location, 1, vec);
+}
+
 void Shader::setVec3(int location, const float *const vec) const {
     glUniform3fv(location, 1, vec);
 }
@@ -124,7 +128,11 @@ void Shader::setMat4(int location, const double *const mat) const {
 
 Shader::GLint Shader::getLocation(const char *var) const {
     GLint location = glGetUniformLocation(m_program, var);
-    assert(!location);
+    //    if (location == -1) {
+    //        std::cerr << "No variable \"" << var << "\" in shader "
+    //                  << m_program << " " << m_name << std::endl;
+    //        THROW();
+    //    }
     return location;
 }
 

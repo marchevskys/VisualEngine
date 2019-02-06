@@ -1,7 +1,8 @@
 #ifndef SHADER_H
 #define SHADER_H
 #include <set>
-
+#include <string>
+#define getName(var) #var
 namespace Visual {
 
 class Shader {
@@ -9,6 +10,7 @@ class Shader {
     typedef unsigned int GLuint;
     typedef int GLint;
     GLuint m_program;
+    std::string m_name = "undefined";
 
     //public:
     Shader(const char *vPath, const char *fPath, const char *gPath = nullptr);
@@ -18,8 +20,10 @@ class Shader {
 
     void setInt(int location, const int value) const;
     void setFloat(int location, const float value) const;
-    void setVec3(int location, const double *const vec) const;
+    //template<class Precision>
     void setVec3(int location, const float *const vec) const;
+    void setVec3(int location, const double *const vec) const;
+    void setVec4(int location, const float *const vec) const;
     void setMat4(int location, const float *const mat) const;
     void setMat4(int location, const double *const mat) const;
     GLuint getProgram() const { return m_program; }
@@ -46,30 +50,38 @@ class ShaderShadow : public Shader {
 
 class Shader3d : public Shader {
   protected:
-    GLuint ViewId, projectionId, modelId;
-    Shader3d(const char *v, const char *f) : Shader(v, f) {}
+    GLuint viewId, projectionId, modelId, viewPosId, lightDirId;
+    Shader3d(const char *v, const char *f) : Shader(v, f) {
+        m_name = "shader3d";
+        modelId = getLocation("model");
+        viewId = getLocation("view");
+        projectionId = getLocation("projection");
+        viewPosId = getLocation("viewPos");
+        lightDirId = getLocation("lightDir");
+    }
     virtual ~Shader3d(){};
 
   public:
+    inline void setProjection(const float *mat) const { setMat4(projectionId, mat); };
+
     inline void setModel(const float *mat) const { setMat4(modelId, mat); };
     inline void setModel(const double *mat) const { setMat4(modelId, mat); };
+
+    inline void setView(const float *mat) const { setMat4(viewId, mat); };
+    inline void setView(const double *mat) const { setMat4(viewId, mat); };
+
+    inline void setViewPos(const float *vec) const { setVec3(viewPosId, vec); };
+    inline void setViewPos(const double *vec) const { setVec3(viewPosId, vec); };
+
+    inline void setLightDir(const float *vec) const { setVec4(lightDirId, vec); };
 };
 
 class ShaderPBR : public Shader3d {
   protected:
-    GLuint colorId, roughnessId;
+    GLuint diffuseColorId;
     ShaderPBR(const char *v, const char *f) : Shader3d(v, f) {
-
-        colorId = getLocation("material.color");
-        roughnessId = getLocation("material.roughness");
-
-        //        TextureID = glGetUniformLocation(programID, "myTextureSampler");
-
-        //        DepthBiasID = glGetUniformLocation(programID, "DepthBiasMVP");
-        //        ShadowMapID = glGetUniformLocation(programID, "shadowMap");
-        //        lightDirID = glGetUniformLocation(programID, "lightDir");
-        //        viewPosID = glGetUniformLocation(programID, "viewPos");
-        //        lightColorID = glGetUniformLocation(programID, "lightColor");
+        m_name = "PBR";
+        //diffuseColorId = getLocation("diffuseColor");
     }
 
     ~ShaderPBR(){};
@@ -79,8 +91,9 @@ class ShaderPBR : public Shader3d {
         static ShaderPBR shader("PBR.vert", "PBR.frag");
         return &shader;
     }
-    inline void setColor(const float *color) const { setVec3(colorId, color); };
-    inline void setRoughness(const float roughness) const { setFloat(colorId, roughness); };
+    inline void setDiffuseColor(const float *color) const {
+        setVec3(diffuseColorId, color);
+    };
 };
 
 } // namespace Visual
