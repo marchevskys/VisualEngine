@@ -31,17 +31,10 @@ Model::Model(Scene *scene, std::shared_ptr<Mesh> mesh, std::shared_ptr<IMaterial
     scene->addModel(this);
 }
 
-template <class MaterialType>
-Model::Model(Scene *scene, Mesh &&mesh, MaterialType &&material, double *transform) {
-    m_mesh = std::make_shared<Mesh>(std::move(mesh));
-    m_material = std::make_shared<MaterialType>(std::move(material));
-    m_transform = transform;
-    scene->addModel(this);
-}
-
 Model::Model(Model &&old) {
     assign(old);
-    m_scene->moveModel(&old, this);
+    THROW("NOT READY");
+    //m_scene->moveModel(&old, this);
 }
 
 Model::Model(const Model &other) {

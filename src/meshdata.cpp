@@ -63,7 +63,6 @@ std::vector<float> MeshData::makeSingleArray() const {
     default:
         THROW("Bad mesh type");
     }
-
     return array;
 }
 
@@ -128,6 +127,25 @@ MeshData MeshPrimitives::icosahedron(MeshData::Type type) {
     return data;
 }
 
+MeshData MeshPrimitives::plane(float scale, MeshData::Type type) {
+    std::vector<float> positions{-1, -1, 0, 1, 1, 0, 1, -1, 0, -1, -1, 0, -1, 1, 0, 1, 1, 0};
+    std::vector<float> normals{0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1};
+    std::vector<float> texcoords{0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1};
+    for (auto &p : positions) {
+        p *= scale;
+    }
+    MeshData data;
+    data.m_vertices = std::move(positions);
+    data.m_normals = std::move(normals);
+    data.m_uvs = std::move(texcoords);
+    data.m_indices.resize(6);
+    data.m_type = type;
+    for (uint i = 0; i < 6; i++)
+        data.m_indices[i] = i;
+
+    return data;
+}
+
 MeshData MeshPrimitives::sphere(uint resolution, MeshData::Type type) {
 #define F(x) static_cast<float>(x)
 
@@ -159,7 +177,7 @@ MeshData MeshPrimitives::sphere(uint resolution, MeshData::Type type) {
             auto offset_i = (i + 1) * (numMeridian + 1) + j + 0;
             auto offsetij = (i + 1) * (numMeridian + 1) + j + 1;
             indices.insert(indices.end(), {offset__, offset_j, offset_i});
-            indices.insert(indices.end(), {offset_j, offset_i, offsetij});
+            indices.insert(indices.end(), {offset_j, offsetij, offset_i});
         }
 
     std::vector<glm::vec2> uvs(positions.size());

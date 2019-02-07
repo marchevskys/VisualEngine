@@ -48,6 +48,7 @@ struct MeshPrimitives {
     static MeshData sphere(uint resolution = 4, MeshData::Type type = DEFAULT_MESH_TYPE);
     static MeshData cube(float scale_x = 1.f, float scale_y = 1.f, float scale_z = 1.f, MeshData::Type type = DEFAULT_MESH_TYPE);
     static MeshData icosahedron(MeshData::Type type = DEFAULT_MESH_TYPE);
+    static MeshData plane(float scale, MeshData::Type type);
 };
 } // namespace Visual
 #endif // MESHDATA_H

@@ -16,15 +16,14 @@ class Model {
   public:
     Model(Scene *scene, shared_ptr<Mesh> mesh, shared_ptr<IMaterial> material, double *transform);
 
-    template <class MaterialType>
-    Model(Scene *scene, Mesh &&mesh, MaterialType &&material, double *transform);
     Model(Model &&other);
     Model(const Model &other);
     Model &operator=(const Model &other);
 
   public:
-    const IMaterial *getMaterial() const { return m_material.get(); }
-    const Mesh *getMesh() const { return m_mesh.get(); }
+    inline const IMaterial *getMaterial() const { return m_material.get(); }
+    inline const Mesh *getMesh() const { return m_mesh.get(); }
+    inline const double *getTransform() const { return m_transform; }
 
   private:
     Model &

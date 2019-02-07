@@ -21,7 +21,7 @@ void Camera::setAspectRatio(float ar) {
     updateProjection();
 }
 
-mat4d Camera::getView() { return glm::lookAt(m_pos, m_aim, m_up); }
+mat4d Camera::getView() const { return glm::lookAt(m_pos, m_aim, m_up); }
 
 void Camera::move(vec3d offset) {
     m_pos += offset;

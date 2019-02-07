@@ -14,23 +14,19 @@ int Window::primaryScreenWidth, Window::primaryScreenHeight;
 
 class WindowManager {
     WindowManager() {
-        // glfw: initialize and configure
-        // ------------------------------
         glfwInit();
-
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
 #ifdef __APPLE__
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
 #endif
-
         const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         Window::primaryScreenWidth = mode->width;
         Window::primaryScreenHeight = mode->height;
         DLOG("GLFW initialized");
     }
+
     ~WindowManager() {
         glfwTerminate();
         DLOG("GLFW terminated");
@@ -61,8 +57,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     Window::currentWindow->resize(width, height);
-    glViewport(0, 0, width, height);
-    Window::currentWindow->getAspectRatio();
+    //glViewport(0, 0, width, height);
 }
 
 void Window::resize(int width, int height) {
@@ -71,8 +66,8 @@ void Window::resize(int width, int height) {
         primaryScreenWidth = width;
         primaryScreenHeight = height;
     } else {
-        m_WindowedWidth = width;
-        m_WindowedHeight = height;
+        m_width = width;
+        m_height = height;
     }
 }
 
@@ -89,10 +84,10 @@ void Window::resize(int width, int height) {
 
 void Window::toggleFullscreen() {
     if (m_fullScreen) {
-        glfwSetWindowMonitor(m_window, nullptr, m_xPos, m_yPos, m_WindowedWidth, m_WindowedHeight, 1);
+        glfwSetWindowMonitor(m_window, nullptr, m_xPos, m_yPos, m_width, m_height, 1);
         glfwSetInputMode(m_window, GLFW_CURSOR, CURSOR_WINDOW_MODE);
         m_fullScreen = false;
-        DLOGN(m_WindowedWidth, m_WindowedHeight);
+        DLOGN(m_width, m_height);
     } else {
         glfwGetWindowPos(m_window, &m_xPos, &m_yPos);
         glfwSetWindowMonitor(m_window, glfwGetPrimaryMonitor(), 0, 0, primaryScreenWidth, primaryScreenHeight, 1);
@@ -103,13 +98,12 @@ void Window::toggleFullscreen() {
     DLOGN(m_fullScreen);
 }
 
-Window::Window(int width, int height, const char *_name, bool _fullScreen) : m_WindowedWidth(width), m_WindowedHeight(height), m_fullScreen(_fullScreen) {
+Window::Window(int width, int height, const char *_name, bool _fullScreen) : m_fullScreen(_fullScreen) {
+    WindowManager::getInstance(); // initialize GLFW
+    glfwWindowHint(GLFW_SAMPLES, 4);
+    m_width = width;
+    m_height = height;
 
-    WindowManager::getInstance();
-    glfwWindowHint(GLFW_SAMPLES, 16);
-
-    m_WindowedWidth = width;
-    m_WindowedHeight = height;
     m_xPos = (primaryScreenWidth - width) / 2;
     m_yPos = (primaryScreenHeight - height) / 2;
 
@@ -117,7 +111,7 @@ Window::Window(int width, int height, const char *_name, bool _fullScreen) : m_W
         m_window = glfwCreateWindow(primaryScreenWidth, primaryScreenHeight, _name, glfwGetPrimaryMonitor(), nullptr);
         glfwSetInputMode(m_window, GLFW_CURSOR, CURSOR_FULL_SCREEN_MODE);
     } else {
-        m_window = glfwCreateWindow(m_WindowedWidth, m_WindowedHeight, _name, nullptr, nullptr);
+        m_window = glfwCreateWindow(m_width, m_height, _name, nullptr, nullptr);
         glfwSetWindowPos(m_window, m_xPos, m_yPos);
         glfwSetInputMode(m_window, GLFW_CURSOR, CURSOR_WINDOW_MODE);
     }
@@ -136,11 +130,14 @@ Window::Window(int width, int height, const char *_name, bool _fullScreen) : m_W
         THROW("Failed to initialize GLEW");
     }
     glfwSwapInterval(1);
+    glfwSetKeyCallback(m_window, key_callback);
     glEnable(GL_DEPTH_TEST);
     //glEnable(GL_BLEND);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
 
     DLOG("Window created");
 }
@@ -151,7 +148,7 @@ void Window::refresh() {
     glfwMakeContextCurrent(m_window);
     glfwSwapBuffers(m_window);
     glfwPollEvents();
-    glfwSetKeyCallback(m_window, key_callback);
+
     glfwSetCursorPosCallback(m_window, Control::mouse_callback); // mouse func
     glfwSetScrollCallback(m_window, Control::scroll_callback);   // scroll func
 
@@ -167,7 +164,7 @@ float Window::getAspectRatio() {
     if (m_fullScreen)
         return static_cast<float>(primaryScreenWidth) / static_cast<float>(primaryScreenHeight);
     else
-        return static_cast<float>(m_WindowedWidth) / static_cast<float>(m_WindowedHeight);
+        return static_cast<float>(m_width) / static_cast<float>(m_height);
 }
 
 bool Window::active() {

@@ -18,9 +18,9 @@ class Camera {
     void setFOV(float fov);
     void setFOV(double fov) { setFOV(static_cast<float>(fov)); };
     void setAspectRatio(float ar);
-    mat4d getView();
-    const mat4f &getProjection() { return m_projection; };
-    const vec3d &getPos() { return m_pos; }
+    mat4d getView() const;
+    const mat4f &getProjection() const { return m_projection; };
+    const vec3d &getPos() const { return m_pos; }
     void move(vec3d offset);
     void rotate(vec3d angle);
 

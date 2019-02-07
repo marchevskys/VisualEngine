@@ -18,8 +18,6 @@ in VS_OUT {
     vec2 tc;
 } vs;
 
-
-
 layout(location = 0) out vec3 color;
 
 vec2 poissonDisk[16] = vec2[](
@@ -57,11 +55,11 @@ void main(){
     vec3 skyDir = vec3(0, 0, 1);
 
     vec3 finalColor = diffuseColor;
-//    vec3 pp = sin(vs.wp.xyz * 10) / 2;
-//    float p = pp.x + pp.y + pp.z;
-//    float miks = float(fract(vs.tc.x * 10 + p) - 0.5 > 0 ^^ fract(vs.tc.y * 5 + p) - 0.5 > 0);
-//    vec3 finalColor = mix(diffuseColor, vec3(0.1, 0.1, 0.1), miks);
-    //finalColor = rainbow(pow(viewDot, 0.5) * 3);
+    //    vec3 pp = sin(vs.wp.xyz * 10) / 2;
+    //    float p = pp.x + pp.y + pp.z;
+    //    float miks = float(fract(vs.tc.x * 10 + p) - 0.5 > 0 ^^ fract(vs.tc.y * 5 + p) - 0.5 > 0);
+    //    vec3 finalColor = mix(diffuseColor, vec3(0.1, 0.1, 0.1), miks);
+    //  finalColor = rainbow(pow(viewDot, 0.3) * 3);
 
     float skyReflection = dot(reflect(viewDir, nn), -skyDir);
     float skyDot = -dot(skyDir, nn);

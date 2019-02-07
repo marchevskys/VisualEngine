@@ -36,16 +36,21 @@ class Shader {
 
 class ShaderShadow : public Shader {
   protected:
-    GLuint ViewProjectionId;
-    ShaderShadow(const char *v, const char *f) : Shader(v, f){};
+    GLuint viewProjectionId, modelId;
+    ShaderShadow(const char *v, const char *f) : Shader(v, f) {
+        viewProjectionId = getLocation("viewProjection");
+        modelId = getLocation("model");
+    };
     ~ShaderShadow(){};
 
   public:
-    static Shader *get() {
+    static ShaderShadow *get() {
         static ShaderShadow shader("shadow.vert", "shadow.frag");
         return &shader;
     }
-    inline void setViewProjection(const float *mat) const { setMat4(ViewProjectionId, mat); };
+    inline void setViewProjection(const float *mat) const { setMat4(viewProjectionId, mat); };
+    inline void setModel(const float *mat) const { setMat4(modelId, mat); };
+    inline void setModel(const double *mat) const { setMat4(modelId, mat); };
 };
 
 class Shader3d : public Shader {
@@ -63,13 +68,10 @@ class Shader3d : public Shader {
 
   public:
     inline void setProjection(const float *mat) const { setMat4(projectionId, mat); };
-
     inline void setModel(const float *mat) const { setMat4(modelId, mat); };
     inline void setModel(const double *mat) const { setMat4(modelId, mat); };
-
     inline void setView(const float *mat) const { setMat4(viewId, mat); };
     inline void setView(const double *mat) const { setMat4(viewId, mat); };
-
     inline void setViewPos(const float *vec) const { setVec3(viewPosId, vec); };
     inline void setViewPos(const double *vec) const { setVec3(viewPosId, vec); };
 

@@ -4,7 +4,7 @@
 namespace Visual {
 
 class Shader3d;
-class Texture;
+class ITexture;
 
 struct Color {
     float r, g, b;
