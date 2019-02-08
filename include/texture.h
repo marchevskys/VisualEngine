@@ -15,9 +15,9 @@ class ITexture {
     virtual ~ITexture() = 0;
 
     unsigned int getId() const { return m_textureId; }
-    void useSlot(GLuint slot);
-    void bind() const;
-    void unbind() const;
+    void useSlot(const GLuint slot);
+    void bind(const GLuint location) const;
+    void unbind(const GLuint location) const;
 };
 
 class TextureFormFile : public ITexture {

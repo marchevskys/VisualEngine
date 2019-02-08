@@ -12,7 +12,6 @@ class Shader {
     GLuint m_program;
     std::string m_name = "undefined";
 
-    //public:
     Shader(const char *vPath, const char *fPath, const char *gPath = nullptr);
     Shader(Shader &&other) = delete;
     Shader(const Shader &other) = delete;
@@ -55,27 +54,31 @@ class ShaderShadow : public Shader {
 
 class Shader3d : public Shader {
   protected:
-    GLuint viewId, projectionId, modelId, viewPosId, lightDirId;
+    GLuint viewId, projectionId, modelId, viewPosId, lightDirId, shadowMapId, shadowMatrixId;
     Shader3d(const char *v, const char *f) : Shader(v, f) {
         m_name = "shader3d";
         modelId = getLocation("model");
         viewId = getLocation("view");
         projectionId = getLocation("projection");
+        shadowMapId = getLocation("shadowMap");
+        shadowMatrixId = getLocation("shadowMatrix");
         viewPosId = getLocation("viewPos");
         lightDirId = getLocation("lightDir");
     }
     virtual ~Shader3d(){};
 
   public:
-    inline void setProjection(const float *mat) const { setMat4(projectionId, mat); };
-    inline void setModel(const float *mat) const { setMat4(modelId, mat); };
-    inline void setModel(const double *mat) const { setMat4(modelId, mat); };
-    inline void setView(const float *mat) const { setMat4(viewId, mat); };
-    inline void setView(const double *mat) const { setMat4(viewId, mat); };
-    inline void setViewPos(const float *vec) const { setVec3(viewPosId, vec); };
-    inline void setViewPos(const double *vec) const { setVec3(viewPosId, vec); };
+    inline void setProjection(const float *mat) const { setMat4(projectionId, mat); }
+    inline void setModel(const float *mat) const { setMat4(modelId, mat); }
+    inline void setModel(const double *mat) const { setMat4(modelId, mat); }
+    inline void setView(const float *mat) const { setMat4(viewId, mat); }
+    inline void setView(const double *mat) const { setMat4(viewId, mat); }
+    inline void setViewPos(const float *vec) const { setVec3(viewPosId, vec); }
+    inline void setViewPos(const double *vec) const { setVec3(viewPosId, vec); }
 
-    inline void setLightDir(const float *vec) const { setVec4(lightDirId, vec); };
+    inline void setLightDir(const float *vec) const { setVec4(lightDirId, vec); }
+    inline void setShadowMap(const int texture) const { setInt(shadowMapId, texture); }
+    inline void setShadowMatrix(const float *mat) const { setMat4(shadowMatrixId, mat); }
 };
 
 class ShaderPBR : public Shader3d {

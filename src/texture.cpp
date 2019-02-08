@@ -5,15 +5,13 @@
 #include <SOIL/SOIL.h>
 namespace Visual {
 
-void ITexture::useSlot(GLuint slot) {
-    glActiveTexture(GL_TEXTURE0 + slot);
-}
-
-void ITexture::bind() const {
+void ITexture::bind(const GLuint location) const {
+    glActiveTexture(GL_TEXTURE0 + location);
     glBindTexture(GL_TEXTURE_2D, m_textureId);
 }
 
-void ITexture::unbind() const {
+void ITexture::unbind(const GLuint location) const {
+    glActiveTexture(GL_TEXTURE0 + location);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -51,7 +49,7 @@ TextureFrameBuffer::TextureFrameBuffer(const int size) {
     m_height = size;
     glGenTextures(1, &m_textureId);
     glBindTexture(GL_TEXTURE_2D, m_textureId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -59,6 +57,11 @@ TextureFrameBuffer::TextureFrameBuffer(const int size) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
     glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY);
+    //    float col = 0.1f;
+    //    float borderColor[] = {col, col, col, col};
+    //    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 } // namespace Visual

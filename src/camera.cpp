@@ -1,4 +1,6 @@
 #include "camera.h"
+#include "logger.h"
+
 #include <glm/gtc/matrix_transform.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -29,6 +31,7 @@ void Camera::move(vec3d offset) {
 }
 
 void Camera::rotate(vec3d angle) {
+    THROW("not ready");
     //vec3d m_pos, m_aim, m_up;
     //glm::rotate()
 }

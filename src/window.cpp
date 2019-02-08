@@ -57,7 +57,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     Window::currentWindow->resize(width, height);
-    //glViewport(0, 0, width, height);
+    glViewport(0, 0, width, height);
 }
 
 void Window::resize(int width, int height) {
@@ -100,7 +100,7 @@ void Window::toggleFullscreen() {
 
 Window::Window(int width, int height, const char *_name, bool _fullScreen) : m_fullScreen(_fullScreen) {
     WindowManager::getInstance(); // initialize GLFW
-    glfwWindowHint(GLFW_SAMPLES, 4);
+    glfwWindowHint(GLFW_SAMPLES, 16);
     m_width = width;
     m_height = height;
 
@@ -131,14 +131,6 @@ Window::Window(int width, int height, const char *_name, bool _fullScreen) : m_f
     }
     glfwSwapInterval(1);
     glfwSetKeyCallback(m_window, key_callback);
-    glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_BLEND);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
-
     DLOG("Window created");
 }
 
@@ -151,9 +143,6 @@ void Window::refresh() {
 
     glfwSetCursorPosCallback(m_window, Control::mouse_callback); // mouse func
     glfwSetScrollCallback(m_window, Control::scroll_callback);   // scroll func
-
-    glClearColor(0.10f, 0.1f, 0.13f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Window::setTitle(const char *title) {
@@ -169,6 +158,13 @@ float Window::getAspectRatio() {
 
 bool Window::active() {
     return !glfwWindowShouldClose(m_window);
+}
+
+void Window::clear() const {
+    bind();
+    //glClearColor(0.10f, 0.1f, 0.13f, 1.0f);
+    glClearColor(0.8f, 0.8f, 0.99f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 Window::~Window() {

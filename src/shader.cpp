@@ -69,7 +69,7 @@ Shader::Shader(const char *vPath, const char *fPath, const char *gPath) {
     if (InfoLogLength > 0) {
         std::vector<char> ProgramErrorMessage(InfoLogLength + 1);
         glGetProgramInfoLog(m_program, InfoLogLength, nullptr, &ProgramErrorMessage[0]);
-        std::cerr << &ProgramErrorMessage[0] << std::endl;
+        std::cerr << &ProgramErrorMessage[0] << " in shader " << m_name << std::endl;
         THROW();
     }
 
@@ -128,11 +128,11 @@ void Shader::setMat4(int location, const double *const mat) const {
 
 Shader::GLint Shader::getLocation(const char *var) const {
     GLint location = glGetUniformLocation(m_program, var);
-    //    if (location == -1) {
-    //        std::cerr << "No variable \"" << var << "\" in shader "
-    //                  << m_program << " " << m_name << std::endl;
-    //        THROW();
-    //    }
+    if (location == -1) {
+        std::cerr << "No variable \"" << var << "\" in shader "
+                  << m_program << " " << m_name << std::endl;
+        THROW();
+    }
     return location;
 }
 

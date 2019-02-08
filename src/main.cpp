@@ -35,12 +35,13 @@ int main() {
         vi::Color sphereColor{0.6, 0.3, 0.1};
         auto sphereMaterial = std::make_shared<vi::MaterialPBR>(sphereColor);
         glm::dmat4 sphereTransform(1);
+        sphereTransform = glm::translate(sphereTransform, glm::dvec3(0, -1.3, 0));
         auto sphereMesh = std::make_shared<vi::Mesh>(vi::MeshPrimitives::sphere(40, vi::MeshData::Type::VTN));
         vi::Model sphereModel(&scene, sphereMesh, sphereMaterial, glm::value_ptr(sphereTransform));
 
         auto sphereMaterial2 = std::make_shared<vi::MaterialPBR>(vi::Color{0.1, 0.3, 0.8});
         glm::dmat4 sphereTransform2(1);
-        sphereTransform2 = glm::translate(sphereTransform2, glm::dvec3(-1, 2, 0));
+        sphereTransform2 = glm::translate(sphereTransform2, glm::dvec3(0, 1.3, 0));
         vi::Model sphereModel2(&scene, sphereMesh, sphereMaterial2, glm::value_ptr(sphereTransform2));
 
         vi::Color planeColor{0.1, 0.1, 0.1};

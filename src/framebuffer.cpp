@@ -9,6 +9,10 @@ float IFrameBuffer::bind() const {
 }
 
 float IFrameBuffer::bind(int leftTopX, int leftTopY, int rightBottomX, int rightBottomY) const {
+    glBindFramebuffer(GL_FRAMEBUFFER, m_frameBufferId);
+    glViewport(leftTopX, leftTopY, rightBottomX, rightBottomY);
+    float diffX = static_cast<float>(rightBottomX - leftTopX);
+    float diffY = static_cast<float>(rightBottomY - leftTopY);
 
     switch (m_cullFace) {
     case Cull::Front:
@@ -46,10 +50,6 @@ float IFrameBuffer::bind(int leftTopX, int leftTopY, int rightBottomX, int right
         break;
     }
 
-    glBindFramebuffer(GL_FRAMEBUFFER, m_frameBufferId);
-    glViewport(leftTopX, leftTopY, rightBottomX, rightBottomY);
-    float diffX = static_cast<float>(rightBottomX - leftTopX);
-    float diffY = static_cast<float>(rightBottomY - leftTopY);
     return diffX / diffY;
 }
 
@@ -62,10 +62,10 @@ IFrameBuffer::~IFrameBuffer() {
 }
 
 DepthFrameBuffer::DepthFrameBuffer(const GLuint textureId) {
+    glBindTexture(GL_TEXTURE_2D, textureId);
     glGenFramebuffers(1, &m_frameBufferId);
     glBindFramebuffer(GL_FRAMEBUFFER, m_frameBufferId);
 
-    glBindTexture(GL_TEXTURE_2D, textureId);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textureId, 0);
     glDrawBuffer(GL_NONE); // No color output in the bound framebuffer, only depth.
 
@@ -75,6 +75,11 @@ DepthFrameBuffer::DepthFrameBuffer(const GLuint textureId) {
 
 DepthFrameBuffer::~DepthFrameBuffer() {
     glDeleteFramebuffers(1, &m_frameBufferId);
+}
+
+void DepthFrameBuffer::clear() const {
+    bind();
+    glClear(GL_DEPTH_BUFFER_BIT);
 }
 
 } // namespace Visual

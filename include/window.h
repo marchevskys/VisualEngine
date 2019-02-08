@@ -16,6 +16,7 @@ class Window : public Visual::IFrameBuffer {
     void setTitle(const char *title);
     float getAspectRatio();
     bool active();
+    void clear() const final;
     ~Window();
     static Window *currentWindow;
 
@@ -25,6 +26,7 @@ class Window : public Visual::IFrameBuffer {
 
     int m_xPos = 0, m_yPos = 0;
     bool m_fullScreen = false;
+    int m_windowWidth = 20, m_windowHeight = 20;
     static int primaryScreenWidth, primaryScreenHeight;
     void resize(int width, int height);
 };
