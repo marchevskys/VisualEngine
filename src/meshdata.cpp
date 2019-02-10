@@ -167,6 +167,7 @@ MeshData MeshPrimitives::sphere(uint resolution, MeshData::Type type) {
             positions.emplace_back(p[0], p[1], radius * cos(F(j) * meridianDivider));
             //positions.insert(positions.end(), {p[0], p[1], radius * cos(F(j) * meridianDivider)});
         }
+
     normals = positions;
 
     std::vector<uint> indices;

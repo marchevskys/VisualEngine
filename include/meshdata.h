@@ -1,6 +1,6 @@
 #ifndef MESHDATA_H
 #define MESHDATA_H
-#define DEFAULT_MESH_TYPE MeshData::Type::V
+#define DEFAULT_MESH_TYPE MeshData::Type::VTN
 
 #include <array>
 #include <vector>
@@ -13,18 +13,10 @@ class MeshData {
     friend struct MeshPrimitives;
 
   public:
-    enum class Type { UNDEF,
-                      V,
-                      VN,
-                      VT,
-                      VTN,
-                      VTNB }; /*vertex, texture, normal, binormal*/
-
-    enum class VertexAttribute : unsigned char { Normal,
-                                                 Color,
-                                                 TexCoord,
-                                                 Binormal
-    } vertexAttribute;
+    // clang-format off
+    enum class Type { UNDEF, V, VN, VT, VTN, VTNB }; /*vertex, texture, normal, binormal*/
+    enum class VertexAttribute : unsigned char {Position, Normal, Color, TexCoord, Binormal} vertexAttribute;
+    // clang-format on
 
     MeshData() {}
     MeshData(MeshData &&other);

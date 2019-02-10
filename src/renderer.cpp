@@ -38,7 +38,7 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
     glm::vec4 lightDir4{lightDir, 0};
 
     //draw shadow
-    glm::mat4 depthProjectionMatrix = glm::ortho<float>(-5.0f, 5.0f, -10.0f, 5.0f, -5.0f, 10.0f);
+    glm::mat4 depthProjectionMatrix = glm::ortho<float>(-3.0f, 3.0f, -10.0f, 3.0f, -3.0f, 10.0f);
     glm::mat4 depthViewMatrix = glm::lookAt(lightDir, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     glm::mat4 depthMV = depthProjectionMatrix * depthViewMatrix;
 

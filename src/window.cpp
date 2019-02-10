@@ -156,6 +156,10 @@ float Window::getAspectRatio() {
         return static_cast<float>(m_width) / static_cast<float>(m_height);
 }
 
+double Window::getTime() {
+    return glfwGetTime();
+}
+
 bool Window::active() {
     return !glfwWindowShouldClose(m_window);
 }

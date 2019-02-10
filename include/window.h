@@ -15,6 +15,7 @@ class Window : public Visual::IFrameBuffer {
     void refresh();
     void setTitle(const char *title);
     float getAspectRatio();
+    static double getTime();
     bool active();
     void clear() const final;
     ~Window();

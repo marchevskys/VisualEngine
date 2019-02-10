@@ -86,10 +86,8 @@ class ShaderPBR : public Shader3d {
     GLuint diffuseColorId;
     ShaderPBR(const char *v, const char *f) : Shader3d(v, f) {
         m_name = "PBR";
-        //diffuseColorId = getLocation("diffuseColor");
+        diffuseColorId = getLocation("diffuseColor");
     }
-
-    ~ShaderPBR(){};
 
   public:
     static Shader3d *get() {

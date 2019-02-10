@@ -103,13 +103,9 @@ void Mesh::draw() const {
     glDrawElements(GL_TRIANGLES, m_IndexCount, GL_UNSIGNED_INT, nullptr);
 }
 void Mesh::bindAndDraw() const {
-    glBindVertexArray(m_VAO);
-    glDrawElements(GL_TRIANGLES, m_IndexCount, GL_UNSIGNED_INT, nullptr);
+    bind();
+    draw(); // :)
 }
-
-void Mesh::draw(const Mesh &m) {
-    m.draw();
-};
 
 Mesh::~Mesh() {
     if (m_VAO) {
@@ -127,4 +123,7 @@ Mesh::Mesh(Mesh &&rhc) {
     m_IndexCount = rhc.m_IndexCount;
     rhc.m_VAO = 0;
 };
+
+Mesh::Mesh(QuadCreator *) : Mesh(MeshPrimitives::plane(1.0f, MeshData::Type::VT)) {}
+
 } // namespace Visual

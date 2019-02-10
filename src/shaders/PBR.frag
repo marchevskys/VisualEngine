@@ -60,9 +60,13 @@ void main(){
     vec3 finalColor = diffuseColor;
     //    vec3 pp = sin(vs.wp.xyz * 10) / 2;
     //    float p = pp.x + pp.y + pp.z;
-    //    float miks = float(fract(vs.tc.x * 10 + p) - 0.5 > 0 ^^ fract(vs.tc.y * 5 + p) - 0.5 > 0);
-    //    vec3 finalColor = mix(diffuseColor, vec3(0.1, 0.1, 0.1), miks);
-    //  finalColor = rainbow(pow(viewDot, 0.3) * 3);
+    //    float miks = float(fract(vs.tc.x * 10) - 0.5 > 0 ^^ fract(vs.tc.y * 5) - 0.5 > 0);
+    //    finalColor = mix(diffuseColor, vec3(0.1, 0.1, 0.1), miks);
+#define PI 3.1415926535
+    if(finalColor.b > 0.5)
+        finalColor =  rainbow(pow(viewDot, 0.3) * 3);
+    else if(finalColor.r > 0.5)
+        finalColor =  mix(rainbow(vs.tc.x * PI), vec3(0.3,0.3,0.3), pow(1 - sin(vs.tc.y * PI), 2));
 
     float shadow = 0.0;
     int discSize = 16;
@@ -86,11 +90,14 @@ void main(){
     vec3 skyColor = fract(clamp(1 - skyReflection, -0.5, 1.0)) * fresnel * vec3(0.7, 0.7, 1.0);
     color = diffuse + specular + ambient + skyColor;
 
-    //color = mix(color, vec3(0.9), pow(gl_FragCoord.z, 3000));
-    color = color / (color + vec3(1.0));
-    color *= 2;
-    color = pow(color, 1 / vec3(1.2)) ;
 
+    color = color / (color + vec3(1.0));
+    color = vec3(1) - pow(vec3(1) - color, vec3(4));
+
+    //color = pow(color, 1 / vec3(1.3)) ;
+
+
+    //color = pow(color, 1 / vec3(1.3));
 
 
 
