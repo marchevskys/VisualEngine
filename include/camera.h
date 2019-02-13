@@ -2,33 +2,38 @@
 #define CAMERA_H
 #include <glm/glm.hpp>
 
-using mat4f = glm::mat<4, 4, float, glm::highp>;
-using mat4d = glm::mat<4, 4, double, glm::highp>;
-using vec3f = glm::vec<3, float, glm::highp>;
-using vec3d = glm::vec<3, double, glm::highp>;
-using vec4f = glm::vec<4, float, glm::highp>;
-using vec4d = glm::vec<4, double, glm::highp>;
-
 namespace Visual {
 class Camera {
   public:
-    Camera(vec3d pos, vec3d aim);
-    void updateView(double dt);
-    void set(glm::dvec3 pos, glm::dvec3 aim, glm::dvec3 up = {0.0, 0.0, 1.0}) { m_pos = pos, m_aim = aim, m_up = up; }
+    Camera(glm::dvec3 pos, glm::dvec3 aim);
+    void set(glm::dvec3 pos, glm::dvec3 aim, glm::dvec3 up = {0.0, 0.0, 1.0});
+
     void setFOV(float fov);
     void setFOV(double fov) { setFOV(static_cast<float>(fov)); };
     void setAspectRatio(float ar);
-    mat4d getView() const;
-    const mat4f &getProjection() const { return m_projection; };
-    const vec3d &getPos() const { return m_pos; }
-    void move(vec3d offset);
-    void rotate(vec3d angle);
+
+    template <class Precision = float>
+    glm::mat<4, 4, Precision, glm::highp> getView() const { return m_view; }
+
+    template <class Precision = float>
+    glm::vec<3, Precision, glm::highp> getPos() const { return m_pos; }
+
+    template <class Precision = float>
+    glm::vec<3, Precision, glm::highp> getDir() const { return m_view[2]; };
+
+    void move(glm::dvec3 offset);
+    void rotate(glm::dvec3 angle);
+
+    const glm::mat4 &getProjection() const { return m_projection; };
 
   private:
-    vec3d m_pos, m_aim, m_up;
     float m_near = 0.1f, m_far = 10000.f, m_fov = 1.f, m_aspectRatio = 1.f;
 
-    mat4f m_projection;
+    glm::dvec3 m_pos, m_aim, m_up;
+    glm::mat4 m_projection;
+    glm::dmat4 m_view;
+
+    void updateView();
     void updateProjection();
 };
 } // namespace Visual

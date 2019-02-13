@@ -24,10 +24,10 @@ class RenderData {
 
   public:
     TextureFrameBuffer shadowTexture;
-    DepthFrameBuffer buf;
-    RenderData() : shadowTexture(1024), buf(shadowTexture.getId()) {
-        buf.setBlendState(IFrameBuffer::Blend::Disabled);
-        buf.setCullMode(IFrameBuffer::Cull::Back);
+    DepthFrameBuffer shadowDepthBuffer;
+    RenderData() : shadowTexture(1024), shadowDepthBuffer(shadowTexture.getId()) {
+        shadowDepthBuffer.setBlendState(IFrameBuffer::Blend::Disabled);
+        shadowDepthBuffer.setCullMode(IFrameBuffer::Cull::None);
     }
 };
 
@@ -38,16 +38,33 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
     glm::vec4 lightDir4{lightDir, 0};
 
     //draw shadow
-    glm::mat4 depthProjectionMatrix = glm::ortho<float>(-3.0f, 3.0f, -10.0f, 3.0f, -3.0f, 10.0f);
+    glm::mat4 depthProjectionMatrix = glm::ortho<float>(-3.0f, 3.0f, -3.0f, 3.0f, -100.0f, 100.0f);
     glm::mat4 depthViewMatrix = glm::lookAt(lightDir, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     glm::mat4 depthMV = depthProjectionMatrix * depthViewMatrix;
 
+    glm::mat4 proj(1);
+    // scale it to Z
+    // enlarge to fit a sphere
+    //
+    auto eyePos = camera.getPos();
+    auto viewDir = camera.getDir();
+    glm::mat4 lightView = glm::lookAt(eyePos, lightDir, viewDir);
+    depthMV = camera.getProjection() * lightView;
+
+    //const V3 up = camera.ge;
+
+    //depthMV = glm::mat4(1); // camera.getProjection() * depthViewMatrix;
+
+    glm::mat4 biasMatrix(0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.5, 0.5, 0.5, 1.0);
+    glm::mat4 depthBiasVP = biasMatrix * depthMV;
     // draw everything with shadow shader;
     auto shadowShader = ShaderShadow::get();
     shadowShader->use();
     shadowShader->setViewProjection(value_ptr(depthMV));
-    m_renderData->buf.bind();
-    m_renderData->buf.clear();
+
+    auto &shadowBuffer = m_renderData->shadowDepthBuffer;
+    shadowBuffer.bind();
+    shadowBuffer.clear();
 
     scene.m_data->forEvery([&](const Scene::ShaderGroup &shaderGroup) {
         shaderGroup.forEvery([&](const Scene::MeshGroup &meshGroup) {
@@ -66,10 +83,9 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
     window.clear();
 
     // retransform shadow projection
-    glm::mat4 biasMatrix(0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.5, 0.5, 0.5, 1.0);
-    glm::mat4 depthBiasVP = biasMatrix * depthMV;
 
     // draw to screen
+    auto &shadowTex = m_renderData->shadowTexture;
     scene.m_data->forEvery([&](const Scene::ShaderGroup &shaderGroup) { // make nested loops great again (@Nikolay)
         const Shader3d *s = shaderGroup.arg;
         s->use();
@@ -79,8 +95,9 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
         s->setLightDir(value_ptr(lightDir4));
 
         s->setShadowMatrix(value_ptr(depthBiasVP));
-        m_renderData->shadowTexture.bind(1);
-        s->setShadowMap(m_renderData->shadowTexture.getId());
+
+        shadowTex.bind(1);
+        s->setShadowMap(shadowTex.getId());
 
         shaderGroup.forEvery([&](const Scene::MeshGroup &meshGroup) {
             meshGroup.arg->bind();
@@ -93,6 +110,13 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
             });
         });
     });
+
+    auto screenQuadShader = ShaderScreenQuad::get();
+    screenQuadShader->use();
+
+    shadowTex.bind(1);
+    screenQuadShader->setTexture(shadowTex.getId());
+    Mesh::Quad()->bindAndDraw();
 }
 
 Renderer::Renderer() {

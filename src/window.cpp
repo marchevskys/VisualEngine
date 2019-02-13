@@ -165,7 +165,7 @@ bool Window::active() {
 }
 
 void Window::clear() const {
-    bind();
+    //bind();
     //glClearColor(0.10f, 0.1f, 0.13f, 1.0f);
     glClearColor(0.8f, 0.8f, 0.99f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

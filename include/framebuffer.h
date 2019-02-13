@@ -19,6 +19,11 @@ class IFrameBuffer {
     void setCullMode(Cull cull) { m_cullFace = cull; }
     void setBlendState(Blend blend) { m_blendState = blend; }
     void setDepthTest(DepthTest dt) { m_DepthTest = dt; }
+
+    static void bindCullMode(Cull cull);
+    static void bindBlendState(Blend blend);
+    static void bindDepthTest(DepthTest dt);
+
     static float bind(GLuint id);
     virtual void clear() const = 0;
     virtual ~IFrameBuffer() = 0;

@@ -13,8 +13,14 @@ float IFrameBuffer::bind(int leftTopX, int leftTopY, int rightBottomX, int right
     glViewport(leftTopX, leftTopY, rightBottomX, rightBottomY);
     float diffX = static_cast<float>(rightBottomX - leftTopX);
     float diffY = static_cast<float>(rightBottomY - leftTopY);
+    bindCullMode(m_cullFace);
+    bindBlendState(m_blendState);
+    bindDepthTest(m_DepthTest);
+    return diffX / diffY;
+}
 
-    switch (m_cullFace) {
+void IFrameBuffer::bindCullMode(IFrameBuffer::Cull cull) {
+    switch (cull) {
     case Cull::Front:
         glEnable(GL_CULL_FACE);
         glCullFace(GL_FRONT);
@@ -27,8 +33,10 @@ float IFrameBuffer::bind(int leftTopX, int leftTopY, int rightBottomX, int right
         glDisable(GL_CULL_FACE);
         break;
     }
+}
 
-    switch (m_blendState) {
+void IFrameBuffer::bindBlendState(IFrameBuffer::Blend blend) {
+    switch (blend) {
     case Blend::Disabled:
         glDisable(GL_BLEND);
         break;
@@ -40,8 +48,10 @@ float IFrameBuffer::bind(int leftTopX, int leftTopY, int rightBottomX, int right
         THROW("is not ready yet");
         break;
     }
+}
 
-    switch (m_DepthTest) {
+void IFrameBuffer::bindDepthTest(IFrameBuffer::DepthTest dt) {
+    switch (dt) {
     case DepthTest::Enabled:
         glEnable(GL_DEPTH_TEST);
         break;
@@ -49,8 +59,6 @@ float IFrameBuffer::bind(int leftTopX, int leftTopY, int rightBottomX, int right
         glDisable(GL_DEPTH_TEST);
         break;
     }
-
-    return diffX / diffY;
 }
 
 float IFrameBuffer::bind(GLuint id) {
@@ -78,7 +86,7 @@ DepthFrameBuffer::~DepthFrameBuffer() {
 }
 
 void DepthFrameBuffer::clear() const {
-    bind();
+    //bind();
     glClear(GL_DEPTH_BUFFER_BIT);
 }
 

@@ -1,11 +1,13 @@
 #version 330 core
 #extension GL_ARB_conservative_depth : enable
-//layout(early_fragment_tests) in;
+#define PI 3.1415926535
+layout(early_fragment_tests) in;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-uniform sampler2DShadow shadowMap;
+//uniform sampler2DShadow shadowMap;
+uniform sampler2D shadowMap;
 
 uniform vec4 lightDir;
 uniform vec3 viewPos;
@@ -58,24 +60,35 @@ void main(){
     vec3 skyDir = vec3(0, 0, 1);
 
     vec3 finalColor = diffuseColor;
-    //    vec3 pp = sin(vs.wp.xyz * 10) / 2;
-    //    float p = pp.x + pp.y + pp.z;
-    //    float miks = float(fract(vs.tc.x * 10) - 0.5 > 0 ^^ fract(vs.tc.y * 5) - 0.5 > 0);
-    //    finalColor = mix(diffuseColor, vec3(0.1, 0.1, 0.1), miks);
-#define PI 3.1415926535
-    if(finalColor.b > 0.5)
-        finalColor =  rainbow(pow(viewDot, 0.3) * 3);
-    else if(finalColor.r > 0.5)
-        finalColor =  mix(rainbow(vs.tc.x * PI), vec3(0.3,0.3,0.3), pow(1 - sin(vs.tc.y * PI), 2));
+
+
+    if(finalColor.b > 0.5){
+
+        //finalColor = pow(abs(s), vec3(10));
+        //finalColor =  rainbow(pow(viewDot, 0.3) * 3);
+        //if(vs.lp.x > 0 ^^ vs.lp.y > 0 ^^ vs.lp.z > 0)
+        //    finalColor = vec3(0.7,0.5, 0.0);
+    }
+    else if(finalColor.r > 0.5){
+        //finalColor =  mix(rainbow(vs.tc.x * PI), vec3(0.4,0.4,0.4), pow(1 - sin(vs.tc.y * PI), 2));
+        finalColor = pow(abs(vs.lp.xyz), vec3(20));
+    }
+
+
 
     float shadow = 0.0;
     int discSize = 16;
     for(int i = 0; i < discSize; i++) {
         vec2 pd = poissonDisk[i] * 0.002;
-        shadow += texture(shadowMap, vec3(vs.shadowCoord.xy + pd, vs.shadowCoord.z / vs.shadowCoord.w));
+        //shadow += texture(shadowMap, vec3((vs.shadowCoord.xy + pd)/ vs.shadowCoord.w, vs.shadowCoord.z / vs.shadowCoord.w));
+        shadow += float(texture(shadowMap, vec2(vs.shadowCoord.xy + pd) / vs.shadowCoord.w).r - vs.shadowCoord.z / vs.shadowCoord.w > 0);
     }
     shadow /= discSize;
 
+    color = vec3(shadow);
+    //if(fract(gl_FragCoord.z * 2000) > 0.9)
+    //    color = vec3(1,0,0);
+    return;
     float skyReflection = dot(reflect(viewDir, nn), -skyDir);
     float skyDot = -dot(skyDir, nn);
 

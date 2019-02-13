@@ -128,11 +128,11 @@ void Shader::setMat4(int location, const double *const mat) const {
 
 Shader::GLint Shader::getLocation(const char *var) const {
     GLint location = glGetUniformLocation(m_program, var);
-    if (location == -1) {
-        std::cerr << "No variable \"" << var << "\" in shader "
-                  << m_program << " " << m_name << std::endl;
-        THROW();
-    }
+    //    if (location == -1) {
+    //        std::cerr << "No variable \"" << var << "\" in shader "
+    //                  << m_program << " " << m_name << std::endl;
+    //        THROW();
+    //    }
     return location;
 }
 

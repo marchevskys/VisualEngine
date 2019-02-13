@@ -33,6 +33,24 @@ class Shader {
     void use() const;
 };
 
+class ShaderScreenQuad : public Shader {
+  protected:
+    GLuint locationAndScaleId, textureLocationId;
+    ShaderScreenQuad(const char *v, const char *f) : Shader(v, f) {
+        // locationAndScaleId = getLocation("locationAndScale");
+        textureLocationId = getLocation("tex1");
+    };
+    ~ShaderScreenQuad(){};
+
+  public:
+    static ShaderScreenQuad *get() {
+        static ShaderScreenQuad shader("passthrough.vert", "passthrough.frag");
+        return &shader;
+    }
+    //inline void setLocationAndScale(const float *mat) const { setMat4(locationAndScaleId, mat); };
+    inline void setTexture(const int tex) const { setInt(textureLocationId, tex); };
+};
+
 class ShaderShadow : public Shader {
   protected:
     GLuint viewProjectionId, modelId;

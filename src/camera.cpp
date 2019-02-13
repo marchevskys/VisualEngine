@@ -9,8 +9,14 @@
 namespace Visual {
 void Camera::updateProjection() { m_projection = glm::perspective(m_fov, m_aspectRatio, m_near, m_far); }
 
-Camera::Camera(vec3d pos, vec3d aim) : m_pos(pos), m_aim(aim), m_up({0.0, 0.0, 1.0}) {
+Camera::Camera(glm::dvec3 pos, glm::dvec3 aim) : m_pos(pos), m_aim(aim), m_up({0.0, 0.0, 1.0}) {
     updateProjection();
+    updateView();
+}
+
+void Camera::set(glm::dvec3 pos, glm::dvec3 aim, glm::dvec3 up) {
+    m_pos = pos, m_aim = aim, m_up = up;
+    updateView();
 }
 
 void Camera::setFOV(float fov) {
@@ -23,17 +29,21 @@ void Camera::setAspectRatio(float ar) {
     updateProjection();
 }
 
-mat4d Camera::getView() const { return glm::lookAt(m_pos, m_aim, m_up); }
-
-void Camera::move(vec3d offset) {
+void Camera::move(glm::dvec3 offset) {
     m_pos += offset;
     m_aim += offset;
+    updateView();
 }
 
-void Camera::rotate(vec3d angle) {
-    THROW("not ready");
-    //vec3d m_pos, m_aim, m_up;
-    //glm::rotate()
+void Camera::rotate(glm::dvec3 angle) {
+    auto radiusVec = m_aim - m_pos;
+    radiusVec = glm::rotate(radiusVec, glm::length(angle), m_up);
+    m_aim = m_pos + radiusVec;
+    updateView();
+}
+
+void Camera::updateView() {
+    m_view = glm::lookAt(m_pos, m_aim, m_up);
 }
 
 } // namespace Visual

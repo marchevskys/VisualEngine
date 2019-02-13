@@ -124,6 +124,6 @@ Mesh::Mesh(Mesh &&rhc) {
     rhc.m_VAO = 0;
 };
 
-Mesh::Mesh(QuadCreator *) : Mesh(MeshPrimitives::plane(1.0f, MeshData::Type::VT)) {}
+Mesh::Mesh(QuadCreator *) : Mesh(MeshPrimitives::plane(1.0f, MeshData::Type::V)) {}
 
 } // namespace Visual

@@ -14,6 +14,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/random.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/string_cast.hpp>
 
@@ -22,6 +23,15 @@
 #include <numeric>
 using namespace std;
 namespace vi = Visual;
+
+glm::dvec4 vecToQuat(glm::dvec3 u, glm::dvec3 v) {
+    float cos_theta = dot(normalize(u), normalize(v));
+    float half_cos = sqrt(0.5f * (1.f + cos_theta));
+    float half_sin = sqrt(0.5f * (1.f - cos_theta));
+    glm::dvec3 w = normalize(cross(u, v));
+    return {half_cos, half_sin * w.x, half_sin * w.y, half_sin * w.z};
+};
+
 int main() {
 
     try {
@@ -48,7 +58,7 @@ int main() {
         auto planeMaterial = std::make_shared<vi::MaterialPBR>(planeColor);
         glm::dmat4 planeTransform(1);
         planeTransform = glm::translate(planeTransform, glm::dvec3(0, 0, -1));
-        auto planeMesh = std::make_shared<vi::Mesh>(vi::MeshPrimitives::plane(200, vi::MeshData::Type::VTN));
+        auto planeMesh = std::make_shared<vi::Mesh>(vi::MeshPrimitives::plane(300.0f, vi::MeshData::Type::VTN));
         vi::Model plane(&scene, planeMesh, planeMaterial, glm::value_ptr(planeTransform));
 
         vi::Camera camera(glm::dvec3(10, 10, 0), glm::dvec3(0, 0, 0));
@@ -69,7 +79,7 @@ int main() {
                 vec = glm::rotate(vec, xx, glm::dvec3(0, 0, 1));
                 distance *= 1.0 + Control::scrollOffset() * 0.1;
             }
-            //camera.setAspectRatio(window.getAspectRatio());
+
             camera.set(vec * distance, glm::dvec3(0.0, 0.0, 0.0));
             renderer.draw(scene, camera, window);
 
