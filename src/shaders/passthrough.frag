@@ -11,11 +11,8 @@ uniform sampler2D tex1;
 
 void main(){
 
-    float col = fract(
-               texture2D(tex1, UV).r
-//                texture(tex1, vec3(UV, 9999))
-                //texture(tex1, vec3(UV, 1.0)).r
-                      * 1000.4);
+    float col = (texture2D(tex1, UV).r);
+
     color = vec3(col);
         
 

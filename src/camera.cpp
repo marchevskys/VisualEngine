@@ -24,7 +24,7 @@ void Camera::setFOV(float fov) {
     updateProjection();
 }
 
-void Camera::setAspectRatio(float ar) {
+void Camera::setAR(float ar) {
     m_aspectRatio = ar;
     updateProjection();
 }

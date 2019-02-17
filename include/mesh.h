@@ -19,6 +19,11 @@ class Mesh {
     void bind() const;
     void draw() const;
 
+    struct OOBB {
+        float p1[3]{0};
+        float p3[3]{0};
+    } m_oobb;
+
     static Mesh *Quad() {
         QuadCreator *q = nullptr;
         static Mesh quad(q);

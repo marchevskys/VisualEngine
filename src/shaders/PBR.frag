@@ -6,7 +6,7 @@ layout(early_fragment_tests) in;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-//uniform sampler2DShadow shadowMap;
+//uniform sampler2DArrayShadow shadowMap;
 uniform sampler2D shadowMap;
 
 uniform vec4 lightDir;
@@ -85,10 +85,10 @@ void main(){
     }
     shadow /= discSize;
 
-    color = vec3(shadow);
+    //color = vec3(shadow);
     //if(fract(gl_FragCoord.z * 2000) > 0.9)
     //    color = vec3(1,0,0);
-    return;
+    //return;
     float skyReflection = dot(reflect(viewDir, nn), -skyDir);
     float skyDot = -dot(skyDir, nn);
 

@@ -8,10 +8,6 @@ class Camera {
     Camera(glm::dvec3 pos, glm::dvec3 aim);
     void set(glm::dvec3 pos, glm::dvec3 aim, glm::dvec3 up = {0.0, 0.0, 1.0});
 
-    void setFOV(float fov);
-    void setFOV(double fov) { setFOV(static_cast<float>(fov)); };
-    void setAspectRatio(float ar);
-
     template <class Precision = float>
     glm::mat<4, 4, Precision, glm::highp> getView() const { return m_view; }
 
@@ -24,10 +20,18 @@ class Camera {
     void move(glm::dvec3 offset);
     void rotate(glm::dvec3 angle);
 
+    void setFOV(float fov);
+    void setFOV(double fov) { setFOV(static_cast<float>(fov)); };
+    void setAR(float ar);
+
+    float getNear() const { return m_near; }
+    float getFar() const { return m_far; }
+    float getAR() const { return m_aspectRatio; }
+
     const glm::mat4 &getProjection() const { return m_projection; };
 
   private:
-    float m_near = 0.1f, m_far = 10000.f, m_fov = 1.f, m_aspectRatio = 1.f;
+    float m_near = 0.1f, m_far = 200.f, m_fov = 1.f, m_aspectRatio = 1.f;
 
     glm::dvec3 m_pos, m_aim, m_up;
     glm::mat4 m_projection;

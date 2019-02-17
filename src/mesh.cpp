@@ -16,6 +16,7 @@ Mesh::Mesh(MeshData &&data) {
 }
 
 void Mesh::setMeshData(const MeshData &mData) {
+
     auto vertexArray = mData.makeSingleArray();
 
     glGenVertexArrays(1, &m_VAO);

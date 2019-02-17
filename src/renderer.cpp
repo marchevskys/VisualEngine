@@ -27,7 +27,7 @@ class RenderData {
     DepthFrameBuffer shadowDepthBuffer;
     RenderData() : shadowTexture(1024), shadowDepthBuffer(shadowTexture.getId()) {
         shadowDepthBuffer.setBlendState(IFrameBuffer::Blend::Disabled);
-        shadowDepthBuffer.setCullMode(IFrameBuffer::Cull::None);
+        shadowDepthBuffer.setCullMode(IFrameBuffer::Cull::Back);
     }
 };
 
@@ -48,8 +48,9 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
     //
     auto eyePos = camera.getPos();
     auto viewDir = camera.getDir();
-    glm::mat4 lightView = glm::lookAt(eyePos, lightDir, viewDir);
-    depthMV = camera.getProjection() * lightView;
+    glm::mat4 lightView = glm::lookAt(lightDir, eyePos, viewDir);
+    lightView = glm::scale(lightView, glm::vec3(8));
+    //    depthMV = camera.getProjection() * lightView;
 
     //const V3 up = camera.ge;
 
@@ -79,7 +80,7 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
     });
 
     // bind window
-    camera.setAspectRatio(window.bind());
+    camera.setAR(window.bind());
     window.clear();
 
     // retransform shadow projection
@@ -116,6 +117,7 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
 
     shadowTex.bind(1);
     screenQuadShader->setTexture(shadowTex.getId());
+    IFrameBuffer::bindDepthTest(IFrameBuffer::DepthTest::Disabled);
     Mesh::Quad()->bindAndDraw();
 }
 
