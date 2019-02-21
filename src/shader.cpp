@@ -91,41 +91,6 @@ void Shader::use() const {
     glUseProgram(m_program);
 }
 
-void Shader::setInt(int location, const int value) const {
-    glUniform1i(location, value);
-}
-
-void Shader::setFloat(int location, const float value) const {
-    glUniform1f(location, value);
-}
-
-void Shader::setVec3(int location, const double *const vec) const {
-    float fVec[16];
-    for (int i = 0; i < 3; i++)
-        fVec[i] = static_cast<float>(vec[i]);
-    glUniform3fv(location, 1, fVec);
-}
-
-void Shader::setVec4(int location, const float *const vec) const {
-    glUniform4fv(location, 1, vec);
-}
-
-void Shader::setVec3(int location, const float *const vec) const {
-    glUniform3fv(location, 1, vec);
-}
-
-void Shader::setMat4(int location, const float *const mat) const {
-    glUniformMatrix4fv(location, 1, GL_FALSE, mat);
-}
-
-void Shader::setMat4(int location, const double *const mat) const {
-
-    float fMat[16];
-    for (int i = 0; i < 16; i++)
-        fMat[i] = static_cast<float>(mat[i]);
-    glUniformMatrix4fv(location, 1, GL_FALSE, fMat);
-}
-
 Shader::GLint Shader::getLocation(const char *var) const {
     GLint location = glGetUniformLocation(m_program, var);
     //    if (location == -1) {
@@ -138,6 +103,41 @@ Shader::GLint Shader::getLocation(const char *var) const {
 
 Shader::~Shader() {
     glDeleteProgram(m_program);
+}
+
+void Shader::set(const GLint &location, const int value) {
+    glUniform1i(location, value);
+}
+
+void Shader::set(const GLint &location, const float value) {
+    glUniform1f(location, value);
+}
+
+void Shader::set(const GLint &location, const glm::vec3 &value) {
+    glUniform3fv(location, 1, &value[0]);
+}
+
+void Shader::set(const GLint &location, const glm::dvec3 &value) {
+    glm::vec3 fValue(value);
+    set(location, fValue);
+}
+
+void Shader::set(const GLint &location, const glm::vec4 &value) {
+    glUniform4fv(location, 1, &value[0]);
+}
+
+void Shader::set(const GLint &location, const glm::dvec4 &value) {
+    glm::vec4 fValue(value);
+    set(location, fValue);
+}
+
+void Shader::set(const GLint &location, const glm::mat4 &value) {
+    glUniformMatrix4fv(location, 1, GL_FALSE, &value[0][0]);
+}
+
+void Shader::set(const GLint &location, const glm::dmat4 &value) {
+    glm::mat4 fValue(value);
+    set(location, fValue);
 }
 
 } // namespace Visual

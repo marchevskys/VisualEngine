@@ -12,18 +12,20 @@ layout(location = 2) in vec2 vertexUV;
 
 
 out VS_OUT {
-    vec4 wp;
-    vec4 lp;
-    vec4 shadowCoord;
-    vec3 n;
-    vec2 tc;
+    vec4 wp;    // world position
+    vec4 cp;    // camera position
+    vec4 lp;    // local position
+    vec4 shadowCoord;   // shadow coordinate
+    vec3 n;     // normal
+    vec2 tc;    // texture coordinate
 } vs;
 
 void main(){
 
         vs.lp = vec4(vertexPosition, 1.0f);
         vs.wp = model * vs.lp;
-        gl_Position  =  projection * view * vs.wp;
+        vs.cp = view * vs.wp;
+        gl_Position  =  projection * vs.cp;
         vs.shadowCoord = shadowMatrix * vs.wp;
         vs.n = mat3(model) * vertexNormal;
         vs.tc = vertexUV;

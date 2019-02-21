@@ -1,16 +1,14 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
+#include <glm/glm.hpp>
 #include <memory>
 namespace Visual {
 
 class Shader3d;
 class ITexture;
 
-struct Color {
-    float r, g, b;
-    Color(float _r = 0.5f, float _g = 0.5f, float _b = 0.5f) : r(_r), g(_g), b(_b) {}
-    const float *get() const { return &r; }
-};
+typedef glm::vec3 Color;
+
 class IMaterial {
   protected:
     const Shader3d *m_shader;

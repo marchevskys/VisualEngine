@@ -10,7 +10,7 @@ MaterialPBR::MaterialPBR(Color c) : m_color(c) {
 
 void MaterialPBR::apply() const {
     const ShaderPBR *sh = static_cast<const ShaderPBR *>(m_shader); // it is always ShaderPBR, no reason to check by dynamic_cast
-    sh->setDiffuseColor(m_color.get());
+    sh->setDiffuseColor(m_color);
 }
 
 } // namespace Visual

@@ -31,7 +31,7 @@ class Camera {
     const glm::mat4 &getProjection() const { return m_projection; };
 
   private:
-    float m_near = 0.1f, m_far = 200.f, m_fov = 1.f, m_aspectRatio = 1.f;
+    float m_near = 0.1f, m_far = 2000.f, m_fov = 1.f, m_aspectRatio = 1.f;
 
     glm::dvec3 m_pos, m_aim, m_up;
     glm::mat4 m_projection;

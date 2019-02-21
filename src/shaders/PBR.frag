@@ -1,33 +1,35 @@
 #version 330 core
 #extension GL_ARB_conservative_depth : enable
 #define PI 3.1415926535
-layout(early_fragment_tests) in;
+#define SHADOW_MAP_CASCADE_COUNT 4
+//layout(early_fragment_tests) in;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-//uniform sampler2DArrayShadow shadowMap;
-uniform sampler2D shadowMap;
+
+uniform sampler2DArray shadowMap;
+//uniform sampler2D shadowMap;
 
 uniform vec4 lightDir;
 uniform vec3 viewPos;
+uniform vec4 cascadeSplits;
 uniform vec3 diffuseColor;
 
-//uniform sampler2D shadowMap;
-
 in VS_OUT {
-    vec4 wp;
-    vec4 lp;
-    vec4 shadowCoord;
-    vec3 n;
-    vec2 tc;
+    vec4 wp;    // world position
+    vec4 cp;    // camera position
+    vec4 lp;    // local position
+    vec4 shadowCoord;   // shadow coordinate
+    vec3 n;     // normal
+    vec2 tc;    // texture coordinate
 } vs;
 
 layout(location = 0) out vec3 color;
 
 vec2 poissonDisk[16] = vec2[](
    vec2(-0.94201624, -0.39906216), vec2(0.94558609, -0.76890725), vec2(-0.094184101, -0.92938870), vec2(0.34495938, 0.29387760),
-   vec2(-0.91588581, 0.45771432), vec2(-0.81544232, -0.87912464), vec2(-0.38277543, 0.27676845),vec2(0.97484398, 0.75648379),
+   vec2(-0.91588581, 0.45771432), vec2(-0.81544232, -0.87912464), vec2(-0.38277543, 0.27676845), vec2(0.97484398, 0.75648379),
    vec2(0.44323325, -0.97511554), vec2(0.53742981, -0.47373420), vec2(-0.26496911, -0.41893023), vec2(0.79197514, 0.19090188),
    vec2(-0.24188840, 0.99706507), vec2(-0.81409955, 0.91437590), vec2(0.19984126, 0.78641367), vec2(0.14383161, -0.14100790)
 );
@@ -36,16 +38,32 @@ float fresnelSchlick(float cosTheta, float f)
 {
     return f + (1.0 - f) * pow(1.0 - cosTheta, 5.0);
 }
-
 vec3 rainbow(float v)
 {
     vec3 color = vec3(sin(v), sin(v + 3.1415926535 / 3), sin(v + 2 * 3.1415926535 / 3));
     return color * color;
 }
-
-float rand(vec3 co){
-    return fract(sin(dot(co, vec3(12.9898,78.233, 37.7464))) * 43758.5453) * 2 - 1;
+float rand(vec3 coord){
+    return fract(sin(dot(coord, vec3(12.9898,78.233, 37.7464))) * 43758.5453) * 2 - 1;
 }
+
+const mat4 biasMat = mat4(0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.5, 0.5, 0.0, 1.0);
+
+float textureProj(vec4 shadowCoord, int cascadeIndex)
+{
+        float shadow = 1.0;
+        float bias = 0.005;
+float dist = texture(shadowMap, vec3(vs.shadowCoord.st, cascadeIndex)).r;
+        if ( shadowCoord.z > -1.0 && shadowCoord.z < 1.0 ) {
+                float dist = texture(shadowMap, vec3(vs.shadowCoord.st, cascadeIndex)).r;
+                if (vs.shadowCoord.w > 0 && dist < vs.shadowCoord.z - bias) {
+                        shadow = 0.0;
+                }
+        }
+        return shadow;
+
+}
+
 
 void main(){
 
@@ -61,34 +79,9 @@ void main(){
 
     vec3 finalColor = diffuseColor;
 
-
-    if(finalColor.b > 0.5){
-
-        //finalColor = pow(abs(s), vec3(10));
-        //finalColor =  rainbow(pow(viewDot, 0.3) * 3);
-        //if(vs.lp.x > 0 ^^ vs.lp.y > 0 ^^ vs.lp.z > 0)
-        //    finalColor = vec3(0.7,0.5, 0.0);
-    }
-    else if(finalColor.r > 0.5){
-        //finalColor =  mix(rainbow(vs.tc.x * PI), vec3(0.4,0.4,0.4), pow(1 - sin(vs.tc.y * PI), 2));
-        finalColor = pow(abs(vs.lp.xyz), vec3(20));
-    }
-
-
-
     float shadow = 0.0;
     int discSize = 16;
-    for(int i = 0; i < discSize; i++) {
-        vec2 pd = poissonDisk[i] * 0.002;
-        //shadow += texture(shadowMap, vec3((vs.shadowCoord.xy + pd)/ vs.shadowCoord.w, vs.shadowCoord.z / vs.shadowCoord.w));
-        shadow += float(texture(shadowMap, vec2(vs.shadowCoord.xy + pd) / vs.shadowCoord.w).r - vs.shadowCoord.z / vs.shadowCoord.w > 0);
-    }
-    shadow /= discSize;
 
-    //color = vec3(shadow);
-    //if(fract(gl_FragCoord.z * 2000) > 0.9)
-    //    color = vec3(1,0,0);
-    //return;
     float skyReflection = dot(reflect(viewDir, nn), -skyDir);
     float skyDot = -dot(skyDir, nn);
 
@@ -103,15 +96,33 @@ void main(){
     vec3 skyColor = fract(clamp(1 - skyReflection, -0.5, 1.0)) * fresnel * vec3(0.7, 0.7, 1.0);
     color = diffuse + specular + ambient + skyColor;
 
-
     color = color / (color + vec3(1.0));
     color = vec3(1) - pow(vec3(1) - color, vec3(4));
+    //color += 0.1 * vec3(rand(vs.wp.xyz));
 
-    //color = pow(color, 1 / vec3(1.3)) ;
+    float zPosition = vs.cp.z;
+    int cascadeIndex = 0;
+    for(int i = 0; i < SHADOW_MAP_CASCADE_COUNT - 1; ++i)
+        if(zPosition < cascadeSplits[i])
+            cascadeIndex = i + 1;
+
+    float sh = textureProj(vs.shadowCoord, cascadeIndex);
+    color = mix(color, vec3(1), 1 - sh);
 
 
-    //color = pow(color, 1 / vec3(1.3));
-
-
+    switch(cascadeIndex) {
+    case 0:
+        color.rgb *= vec3(1.0f, 0.25f, 0.25f);
+        break;
+    case 1:
+        color.rgb *= vec3(0.25f, 1.0f, 0.25f);
+        break;
+    case 2:
+        color.rgb *= vec3(0.25f, 0.25f, 1.0f);
+        break;
+    case 3:
+        color.rgb *= vec3(1.0f, 1.0f, 0.25f);
+         break;
+        }
 
 }
