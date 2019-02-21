@@ -50,15 +50,14 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
         });
     };
 
-    m_renderData->cascade.prepareCascades(camera);
+    m_renderData->cascade.prepareCascades(camera, lightDir);
     m_renderData->cascade.drawAll(renderShadow);
 
     //    glm::mat4 biasMatrix(0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.5, 0.5, 0.5, 1.0);
 
-    //    // bind window
     camera.setAR(window.bind());
     window.clear();
-
+    auto cascadeTexID = m_renderData->cascade.getDepthArrayTextureID();
     scene.m_data->forEvery([&](const Scene::ShaderGroup &shaderGroup) { // make nested loops great again (@Nikolay)
         const Shader3d *s = shaderGroup.arg;
         s->use();
@@ -66,6 +65,8 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
         s->setProjection(camera.getProjection());
         s->setViewPos(camera.getPos());
         s->setLightDir(lightDir4);
+        s->setCascades(m_renderData->cascade.viewProjMatrix, m_renderData->cascade.splitDepth, SHADOW_MAP_CASCADE_COUNT);
+        s->setShadowMap(0);
 
         shaderGroup.forEvery([&](const Scene::MeshGroup &meshGroup) {
             meshGroup.arg->bind();
@@ -80,12 +81,13 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
         });
     });
 
-    auto screenQuadShader = ShaderScreenQuad::get();
-    screenQuadShader->use();
-
-    //screenQuadShader->setTexture(m_renderData->cascade.getDepthArrayTextureID());
-    IFrameBuffer::bindDepthTest(IFrameBuffer::DepthTest::Disabled);
-    Mesh::Quad()->bindAndDraw();
+    //    auto screenQuadShader = ShaderScreenQuad::get();
+    //    screenQuadShader->use();
+    //    //ITexture::bind(cascadeTexID, 0);
+    //    screenQuadShader->setTexture(0);
+    //    //screenQuadShader->setTexture(m_renderData->cascade.getDepthArrayTextureID());
+    //    IFrameBuffer::bindDepthTest(IFrameBuffer::DepthTest::Disabled);
+    //    Mesh::Quad()->bindAndDraw();
 }
 
 Renderer::Renderer() {

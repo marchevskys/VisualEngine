@@ -17,6 +17,7 @@ class ITexture {
     unsigned int getId() const { return m_textureId; }
     void useSlot(const GLuint slot);
     void bind(const GLuint location) const;
+    static void bind(GLuint textureID, GLuint location);
     void unbind(const GLuint location) const;
 };
 

@@ -58,7 +58,7 @@ int main() {
         auto planeMaterial = std::make_shared<vi::MaterialPBR>(planeColor);
         glm::dmat4 planeTransform(1);
         planeTransform = glm::translate(planeTransform, glm::dvec3(0, 0, -1));
-        auto planeMesh = std::make_shared<vi::Mesh>(vi::MeshPrimitives::plane(300.0f, vi::MeshData::Type::VTN));
+        auto planeMesh = std::make_shared<vi::Mesh>(vi::MeshPrimitives::plane(3000.0f, vi::MeshData::Type::VTN));
         vi::Model plane(&scene, planeMesh, planeMaterial, glm::value_ptr(planeTransform));
 
         vi::Camera camera(glm::dvec3(10, 10, 0), glm::dvec3(0, 0, 0));

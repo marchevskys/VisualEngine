@@ -140,4 +140,16 @@ void Shader::set(const GLint &location, const glm::dmat4 &value) {
     set(location, fValue);
 }
 
+void Shader::set(const Shader::GLint &location, const float *valuePtr, GLint count) {
+    glUniform1fv(location, count, valuePtr);
+}
+
+void Shader::set(const Shader::GLint &location, const glm::vec3 *valuePtr, GLint count) {
+    glUniform1fv(location, count, &valuePtr[0][0]);
+}
+
+void Shader::set(const Shader::GLint &location, const glm::mat4 *valuePtr, GLint count) {
+    glUniformMatrix4fv(location, count, GL_FALSE, &valuePtr[0][0][0]);
+}
+
 } // namespace Visual

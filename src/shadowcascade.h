@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 
 namespace Visual {
-#define SHADOW_MAP_CASCADE_COUNT 4
+#define SHADOW_MAP_CASCADE_COUNT 6
 
 typedef unsigned int GLuint;
 typedef int GLsizei;
@@ -15,23 +15,20 @@ class Camera;
 
 class ShadowCascade {
   public:
-    ShadowCascade(int size = 1024);
-    void prepareCascades(const Camera &camera);
-
+    ShadowCascade(int size = 2048);
+    void prepareCascades(const Camera &camera, const glm::vec3 &lightDir);
     void drawAll(std::function<void(const glm::mat4 &)> renderFunction);
-
     GLuint getDepthArrayTextureID();
 
-    struct Cascade {
-        float splitDepth;
-        glm::mat4 viewProjMatrix;
-    };
+    const float *getSplitDepthes() { return splitDepth; }
+
+    float splitDepth[SHADOW_MAP_CASCADE_COUNT];
+    glm::mat4 viewProjMatrix[SHADOW_MAP_CASCADE_COUNT];
 
   private:
     GLuint mCascadedShadowFBO = 0, m_CascadedTextureArray = 0;
-    float cascadeSplitLambda = 0.95f;
+    const float cascadeSplitLambda = 0.95f;
     GLsizei mShadowMapSize;
-    std::array<Cascade, SHADOW_MAP_CASCADE_COUNT> m_cascades;
 };
 } // namespace Visual
 #endif // SHADOWCASCADE_H

@@ -1,4 +1,4 @@
-#version 420 core
+#version 450 core
 
 in vec2 UV;
 out vec3 color;
@@ -20,6 +20,7 @@ void main(){
         color.rgb += vec3(0.25f, 1.0f, 0.25f) * fract(texture(tex1, vec3(UV + pd, 1)).r * 1000);
         color.rgb += vec3(0.25f, 0.25f, 1.0f) * fract(texture(tex1, vec3(UV + pd, 2)).r * 1000);
         color.rgb += vec3(1.0f, 1.0f, 0.25f)  * fract(texture(tex1, vec3(UV + pd, 3)).r * 1000);
+        //color.rgb += vec3(0.0f, 1.0f, 1.0f)  * fract(texture(tex1, vec3(UV + pd, 4)).r * 1000);
     }
     color/= 4;
 }

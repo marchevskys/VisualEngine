@@ -28,6 +28,10 @@ class Shader {
     static void set(const GLint &location, const glm::mat4 &value);
     static void set(const GLint &location, const glm::dmat4 &value);
 
+    static void set(const GLint &location, const float *valuePtr, GLint count);
+    static void set(const GLint &location, const glm::vec3 *valuePtr, GLint count);
+    static void set(const GLint &location, const glm::mat4 *valuePtr, GLint count);
+
     GLuint getProgram() const { return m_program; }
     GLint getLocation(const char *var) const;
     static std::set<Shader *> registeredShaders;
@@ -76,17 +80,20 @@ class ShaderShadow : public Shader {
 
 class Shader3d : public Shader {
   protected:
-    GLint viewId, projectionId, modelId, viewPosId, lightDirId, shadowMapId, shadowMatrixId, cascadeSplitsID;
+    GLint viewId, projectionId, modelId, viewPosId, lightDirId, shadowMapId,
+        cascadeTransformsID, cascadeSplitsID, shadowCascadeCoutID;
     Shader3d(const char *v, const char *f) : Shader(v, f) {
         m_name = "shader3d";
         modelId = getLocation("model");
         viewId = getLocation("view");
         projectionId = getLocation("projection");
         shadowMapId = getLocation("shadowMap");
-        shadowMatrixId = getLocation("shadowMatrix");
+
         viewPosId = getLocation("viewPos");
         lightDirId = getLocation("lightDir");
+        cascadeTransformsID = getLocation("cascadeTransforms");
         cascadeSplitsID = getLocation("cascadeSplits");
+        shadowCascadeCoutID = getLocation("shadowCascadeCout");
     }
     virtual ~Shader3d(){};
 
@@ -99,7 +106,12 @@ class Shader3d : public Shader {
 
     void setLightDir(const glm::vec3 &vec) const { set(lightDirId, vec); }
     void setShadowMap(const int texture) const { set(shadowMapId, texture); }
-    void setShadowMatrix(const glm::mat4 &mat) const { set(shadowMatrixId, mat); }
+
+    void setCascades(const glm::mat4 *mat, const float *splits, GLint count) const {
+        set(shadowCascadeCoutID, count);
+        set(cascadeTransformsID, mat, count);
+        set(cascadeSplitsID, splits, count);
+    }
 };
 
 class ShaderPBR : public Shader3d {

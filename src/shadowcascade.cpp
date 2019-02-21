@@ -23,7 +23,7 @@ ShadowCascade::ShadowCascade(int size) {
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    //glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_CascadedTextureArray, 0);
@@ -32,7 +32,7 @@ ShadowCascade::ShadowCascade(int size) {
     // restore default FBO
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 }
-void ShadowCascade::prepareCascades(const Camera &camera) {
+void ShadowCascade::prepareCascades(const Camera &camera, const glm::vec3 &lightDir) {
 
     float cascadeSplits[SHADOW_MAP_CASCADE_COUNT];
 
@@ -103,14 +103,12 @@ void ShadowCascade::prepareCascades(const Camera &camera) {
         glm::vec3 maxExtents = glm::vec3(radius);
         glm::vec3 minExtents = -maxExtents;
 
-        glm::vec3 lightPos = glm::vec3(-1);
-        glm::vec3 lightDir = normalize(-lightPos); // what the stupid logic ????????
-        glm::mat4 lightViewMatrix = glm::lookAt(frustumCenter - lightDir * -minExtents.z, frustumCenter, glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 lightViewMatrix = glm::lookAt(frustumCenter - lightDir * minExtents.z, frustumCenter, glm::vec3(0.0f, 1.0f, 0.0f));
         glm::mat4 lightOrthoMatrix = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f, maxExtents.z - minExtents.z);
 
         // Store split distance and matrix in cascade
-        m_cascades[i].splitDepth = (camera.getNear() + splitDist * clipRange) * -1.0f;
-        m_cascades[i].viewProjMatrix = lightOrthoMatrix * lightViewMatrix;
+        splitDepth[i] = (camera.getNear() + splitDist * clipRange) * -1.0f;
+        viewProjMatrix[i] = lightOrthoMatrix * lightViewMatrix;
 
         lastSplitDist = cascadeSplits[i];
     }
@@ -121,13 +119,13 @@ void ShadowCascade::drawAll(std::function<void(const glm::mat4 &)> renderFunctio
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_DEPTH_CLAMP);
-    glCullFace(GL_FRONT);
+    glCullFace(GL_BACK);
     glBindFramebuffer(GL_FRAMEBUFFER, mCascadedShadowFBO);
     glViewport(0, 0, mShadowMapSize, mShadowMapSize);
     for (int i = 0; i < SHADOW_MAP_CASCADE_COUNT; i++) {
         glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_CascadedTextureArray, 0, i);
         glClear(GL_DEPTH_BUFFER_BIT);
-        auto currentCascade = m_cascades[i].viewProjMatrix;
+        auto currentCascade = viewProjMatrix[i];
         renderFunction(currentCascade);
     }
     //glBindFramebuffer(GL_FRAMEBUFFER, 0);

@@ -5,6 +5,7 @@ project(GameTest2)
 INCLUDE_DIRECTORIES(include/)
 
 add_definitions(-D_SHADER_PATH="../GameTest2/src/shaders/")
+
 file(GLOB_RECURSE SHADER_FILES *.frag *.vert *.glsl)
 aux_source_directory(src/ SRC_LIST)
 add_executable(${PROJECT_NAME} ${SRC_LIST} ${SHADER_FILES})

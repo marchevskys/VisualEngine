@@ -1,26 +1,29 @@
-#version 330 core
+#version 450 core
+#extension GL_EXT_texture_array : enable
 #extension GL_ARB_conservative_depth : enable
 #define PI 3.1415926535
-#define SHADOW_MAP_CASCADE_COUNT 4
-//layout(early_fragment_tests) in;
+#define MAX_SHADOW_MAP_CASCADE_COUNT 10
+layout(early_fragment_tests) in;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-uniform sampler2DArray shadowMap;
-//uniform sampler2D shadowMap;
+uniform sampler2DArrayShadow shadowMap;
 
-uniform vec4 lightDir;
+uniform vec3 lightDir;
 uniform vec3 viewPos;
-uniform vec4 cascadeSplits;
+
+uniform int shadowCascadeCout;
+uniform float cascadeSplits[MAX_SHADOW_MAP_CASCADE_COUNT];
+uniform mat4 cascadeTransforms[MAX_SHADOW_MAP_CASCADE_COUNT];
+
 uniform vec3 diffuseColor;
 
 in VS_OUT {
     vec4 wp;    // world position
     vec4 cp;    // camera position
     vec4 lp;    // local position
-    vec4 shadowCoord;   // shadow coordinate
     vec3 n;     // normal
     vec2 tc;    // texture coordinate
 } vs;
@@ -49,21 +52,6 @@ float rand(vec3 coord){
 
 const mat4 biasMat = mat4(0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.5, 0.5, 0.0, 1.0);
 
-float textureProj(vec4 shadowCoord, int cascadeIndex)
-{
-        float shadow = 1.0;
-        float bias = 0.005;
-float dist = texture(shadowMap, vec3(vs.shadowCoord.st, cascadeIndex)).r;
-        if ( shadowCoord.z > -1.0 && shadowCoord.z < 1.0 ) {
-                float dist = texture(shadowMap, vec3(vs.shadowCoord.st, cascadeIndex)).r;
-                if (vs.shadowCoord.w > 0 && dist < vs.shadowCoord.z - bias) {
-                        shadow = 0.0;
-                }
-        }
-        return shadow;
-
-}
-
 
 void main(){
 
@@ -79,8 +67,21 @@ void main(){
 
     vec3 finalColor = diffuseColor;
 
+    float zPosition = vs.cp.z;
+    int cascadeIndex = 0;
+    for(int i = 0; i < shadowCascadeCout - 1; ++i)
+        if(zPosition < cascadeSplits[i])
+            cascadeIndex = i + 1;
+
+    vec4 shadowCoord = (biasMat * cascadeTransforms[cascadeIndex]) * vs.wp;
+
     float shadow = 0.0;
     int discSize = 16;
+    for(int i = 0 ; i < discSize; i++){
+        vec2 pd = poissonDisk[i] * 0.001f;
+        shadow += texture(shadowMap, vec4(shadowCoord.xy + pd, cascadeIndex, 0.5 + shadowCoord.z * 0.5));
+    }
+    shadow /= discSize;
 
     float skyReflection = dot(reflect(viewDir, nn), -skyDir);
     float skyDot = -dot(skyDir, nn);
@@ -98,31 +99,9 @@ void main(){
 
     color = color / (color + vec3(1.0));
     color = vec3(1) - pow(vec3(1) - color, vec3(4));
-    //color += 0.1 * vec3(rand(vs.wp.xyz));
 
-    float zPosition = vs.cp.z;
-    int cascadeIndex = 0;
-    for(int i = 0; i < SHADOW_MAP_CASCADE_COUNT - 1; ++i)
-        if(zPosition < cascadeSplits[i])
-            cascadeIndex = i + 1;
-
-    float sh = textureProj(vs.shadowCoord, cascadeIndex);
-    color = mix(color, vec3(1), 1 - sh);
-
-
-    switch(cascadeIndex) {
-    case 0:
-        color.rgb *= vec3(1.0f, 0.25f, 0.25f);
-        break;
-    case 1:
-        color.rgb *= vec3(0.25f, 1.0f, 0.25f);
-        break;
-    case 2:
-        color.rgb *= vec3(0.25f, 0.25f, 1.0f);
-        break;
-    case 3:
-        color.rgb *= vec3(1.0f, 1.0f, 0.25f);
-         break;
-        }
+    bool s = vs.cp.x < 0.4;
+    float mask = s || fract((gl_FragCoord.x - gl_FragCoord.y) * 0.01) > 0.5 ? 0 : 0.4;
+    color = mix(color, rainbow(cascadeIndex * 0.3), mask);
 
 }

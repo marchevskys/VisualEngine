@@ -5,9 +5,14 @@
 #include <SOIL/SOIL.h>
 namespace Visual {
 
-void ITexture::bind(const GLuint location) const {
+void ITexture::bind(GLuint location) const {
     glActiveTexture(GL_TEXTURE0 + location);
     glBindTexture(GL_TEXTURE_2D, m_textureId);
+}
+
+void ITexture::bind(GLuint textureID, GLuint location) {
+    glActiveTexture(GL_TEXTURE0 + location);
+    glBindTexture(GL_TEXTURE_2D, textureID);
 }
 
 void ITexture::unbind(const GLuint location) const {

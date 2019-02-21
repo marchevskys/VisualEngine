@@ -1,4 +1,4 @@
-#version 330 core
+#version 450 core
 
 uniform mat4 model;
 uniform mat4 view;
@@ -15,7 +15,6 @@ out VS_OUT {
     vec4 wp;    // world position
     vec4 cp;    // camera position
     vec4 lp;    // local position
-    vec4 shadowCoord;   // shadow coordinate
     vec3 n;     // normal
     vec2 tc;    // texture coordinate
 } vs;
@@ -26,7 +25,6 @@ void main(){
         vs.wp = model * vs.lp;
         vs.cp = view * vs.wp;
         gl_Position  =  projection * vs.cp;
-        vs.shadowCoord = shadowMatrix * vs.wp;
         vs.n = mat3(model) * vertexNormal;
         vs.tc = vertexUV;
 }
