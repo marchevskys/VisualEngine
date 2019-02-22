@@ -10,12 +10,13 @@
 #include "shadowcascade.h"
 #include "texture.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
-#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/string_cast.hpp>
+
 #include <iostream>
 #include <mutex>
 static std::mutex RenderLocker;
@@ -29,7 +30,10 @@ class RenderData {
 
 void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &window) {
     std::lock_guard<std::mutex> lock(RenderLocker); // lock the thread to avoid multi-thread shader handling
-    glm::vec3 lightDir{glm::normalize(glm::vec3(1, 1, 1))};
+
+    glm::vec3 initDir(glm::normalize(glm::vec3(0, 1, 1)));
+    static float rotangle = 0.0f;
+    glm::vec3 lightDir(glm::rotate(initDir, rotangle += 0.005f, glm::vec3(0.5, 0, 1)));
     glm::vec4 lightDir4{lightDir, 0};
 
     auto shadowShader = ShaderShadow::get();
@@ -81,13 +85,13 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
         });
     });
 
-    //    auto screenQuadShader = ShaderScreenQuad::get();
-    //    screenQuadShader->use();
-    //    //ITexture::bind(cascadeTexID, 0);
-    //    screenQuadShader->setTexture(0);
-    //    //screenQuadShader->setTexture(m_renderData->cascade.getDepthArrayTextureID());
-    //    IFrameBuffer::bindDepthTest(IFrameBuffer::DepthTest::Disabled);
-    //    Mesh::Quad()->bindAndDraw();
+    auto screenQuadShader = ShaderScreenQuad::get();
+    screenQuadShader->use();
+    //ITexture::bind(cascadeTexID, 0);
+    screenQuadShader->setTexture(0);
+    //screenQuadShader->setTexture(m_renderData->cascade.getDepthArrayTextureID());
+    IFrameBuffer::bindDepthTest(IFrameBuffer::DepthTest::Disabled);
+    Mesh::Quad()->bindAndDraw();
 }
 
 Renderer::Renderer() {

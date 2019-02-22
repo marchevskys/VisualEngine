@@ -2,15 +2,19 @@
 #extension GL_EXT_texture_array : enable
 #extension GL_ARB_conservative_depth : enable
 #define PI 3.1415926535
-#define MAX_SHADOW_MAP_CASCADE_COUNT 10
+#define MAX_SHADOW_MAP_CASCADE_COUNT 16
+
+#define DEBUG
 layout(early_fragment_tests) in;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-
+#ifdef DEBUG
+uniform sampler2DArray shadowMap;
+#else
 uniform sampler2DArrayShadow shadowMap;
-
+#endif
 uniform vec3 lightDir;
 uniform vec3 viewPos;
 
@@ -41,11 +45,13 @@ float fresnelSchlick(float cosTheta, float f)
 {
     return f + (1.0 - f) * pow(1.0 - cosTheta, 5.0);
 }
+
 vec3 rainbow(float v)
 {
     vec3 color = vec3(sin(v), sin(v + 3.1415926535 / 3), sin(v + 2 * 3.1415926535 / 3));
     return color * color;
 }
+
 float rand(vec3 coord){
     return fract(sin(dot(coord, vec3(12.9898,78.233, 37.7464))) * 43758.5453) * 2 - 1;
 }
@@ -78,8 +84,13 @@ void main(){
     float shadow = 0.0;
     int discSize = 16;
     for(int i = 0 ; i < discSize; i++){
-        vec2 pd = poissonDisk[i] * 0.001f;
+        vec2 pd = 0.004 * poissonDisk[i] * gl_FragCoord.w;
+#ifdef DEBUG
+        shadow += texture(shadowMap, vec3(shadowCoord.xy + pd, cascadeIndex)).r - 0.5 - shadowCoord.z * 0.5 < 0 ? 0.0 : 1.0;
+#else
         shadow += texture(shadowMap, vec4(shadowCoord.xy + pd, cascadeIndex, 0.5 + shadowCoord.z * 0.5));
+#endif
+
     }
     shadow /= discSize;
 
@@ -100,8 +111,8 @@ void main(){
     color = color / (color + vec3(1.0));
     color = vec3(1) - pow(vec3(1) - color, vec3(4));
 
-    bool s = vs.cp.x < 0.4;
-    float mask = s || fract((gl_FragCoord.x - gl_FragCoord.y) * 0.01) > 0.5 ? 0 : 0.4;
-    color = mix(color, rainbow(cascadeIndex * 0.3), mask);
-
+#ifdef DEBUG
+    //float mask = vs.cp.x < 0.4 || fract((gl_FragCoord.x - gl_FragCoord.y) * 0.03) > 0.9 ? 0 : 0.4;
+    //color = mix(color, rainbow(cascadeIndex * 0.3), mask);
+#endif
 }

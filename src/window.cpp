@@ -100,7 +100,7 @@ void Window::toggleFullscreen() {
 
 Window::Window(int width, int height, const char *_name, bool _fullScreen) : m_fullScreen(_fullScreen) {
     WindowManager::getInstance(); // initialize GLFW
-    glfwWindowHint(GLFW_SAMPLES, 16);
+    glfwWindowHint(GLFW_SAMPLES, 1);
     m_width = width;
     m_height = height;
 

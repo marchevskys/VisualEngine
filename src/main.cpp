@@ -14,45 +14,48 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/random.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/string_cast.hpp>
 
 #include <cassert>
 #include <memory>
-#include <numeric>
+
 using namespace std;
 namespace vi = Visual;
-
-glm::dvec4 vecToQuat(glm::dvec3 u, glm::dvec3 v) {
-    float cos_theta = dot(normalize(u), normalize(v));
-    float half_cos = sqrt(0.5f * (1.f + cos_theta));
-    float half_sin = sqrt(0.5f * (1.f - cos_theta));
-    glm::dvec3 w = normalize(cross(u, v));
-    return {half_cos, half_sin * w.x, half_sin * w.y, half_sin * w.z};
-};
 
 int main() {
 
     try {
         Window window(1024, 768, "Main window", false);
         window.setCullMode(vi::IFrameBuffer::Cull::Front);
-
         vi::Scene scene;
 
-        //auto texture = std::make_shared<vi::Texture>("../GameTest2/textures/jupiter_diffuse.jpg");
+        //        struct Object {
+        //            glm::dmat4 m_tr = glm::dmat4(1);
+        //            vi::Model m_m;
+        //            Object(){
 
-        vi::Color sphereColor{0.6, 0.3, 0.1};
-        auto sphereMaterial = std::make_shared<vi::MaterialPBR>(sphereColor);
-        glm::dmat4 sphereTransform(1);
-        sphereTransform = glm::translate(sphereTransform, glm::dvec3(0, -1.3, 0));
+        //            }
+        //        };
+
+        //        for (int i = 0; i < 30; ++i) {
+        //            glm::sphericalRand(30.0);
+        //        }
+
+        //auto texture = std::make_shared<vi::Texture>("../GameTest2/textures/jupiter_diffuse.jpg");
         auto sphereMesh = std::make_shared<vi::Mesh>(vi::MeshPrimitives::sphere(40, vi::MeshData::Type::VTN));
+
+        auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.6, 0.04, 0.1});
+        glm::dmat4 sphereTransform = glm::translate(glm::dmat4(1), glm::dvec3(0, -1.3, 0));
         vi::Model sphereModel(&scene, sphereMesh, sphereMaterial, glm::value_ptr(sphereTransform));
 
-        auto sphereMaterial2 = std::make_shared<vi::MaterialPBR>(vi::Color{0.1, 0.3, 0.8});
-        glm::dmat4 sphereTransform2(1);
-        sphereTransform2 = glm::translate(sphereTransform2, glm::dvec3(0, 1.3, 0));
+        auto sphereMaterial2 = std::make_shared<vi::MaterialPBR>(vi::Color{0.3, 0.04, 0.8});
+        glm::dmat4 sphereTransform2 = glm::translate(glm::dmat4(1), glm::dvec3(0, 1.3, 0));
         vi::Model sphereModel2(&scene, sphereMesh, sphereMaterial2, glm::value_ptr(sphereTransform2));
+
+        auto sphereMaterial3 = std::make_shared<vi::MaterialPBR>(vi::Color{0.8, 0.8, 0.8});
+        glm::dmat4 sphereTransform3 = glm::translate(glm::dmat4(1), glm::dvec3(40, 1.3, 0));
+        vi::Model sphereModel3(&scene, sphereMesh, sphereMaterial3, glm::value_ptr(sphereTransform3));
 
         vi::Color planeColor{0.1, 0.1, 0.1};
         auto planeMaterial = std::make_shared<vi::MaterialPBR>(planeColor);
@@ -64,9 +67,9 @@ int main() {
         vi::Camera camera(glm::dvec3(10, 10, 0), glm::dvec3(0, 0, 0));
         double xx = M_PI_2 - 0.01, yy = -0.5;
         double distance = 5.0;
+
         DLOG("main loop");
         vi::Renderer renderer;
-
         while (window.active()) {
 
             glm::dvec3 vec = {1, 0, 0};
