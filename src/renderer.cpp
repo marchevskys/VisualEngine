@@ -79,19 +79,19 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
                 materialGroup.forEvery([&](const Model *m) {
                     auto &modelTransform = reinterpret_cast<const glm::dmat4 &>(*m->getTransform());
                     s->setModel(modelTransform);
-                    m->getMesh()->draw();
+                    m->getMesh()->draw(3);
                 });
             });
         });
     });
 
-    auto screenQuadShader = ShaderScreenQuad::get();
-    screenQuadShader->use();
-    //ITexture::bind(cascadeTexID, 0);
-    screenQuadShader->setTexture(0);
-    //screenQuadShader->setTexture(m_renderData->cascade.getDepthArrayTextureID());
-    IFrameBuffer::bindDepthTest(IFrameBuffer::DepthTest::Disabled);
-    MeshPrimitive::quad().bindAndDraw();
+    //    auto screenQuadShader = ShaderScreenQuad::get();
+    //    screenQuadShader->use();
+    //    //ITexture::bind(cascadeTexID, 0);
+    //    screenQuadShader->setTexture(0);
+    //    //screenQuadShader->setTexture(m_renderData->cascade.getDepthArrayTextureID());
+    //    IFrameBuffer::bindDepthTest(IFrameBuffer::DepthTest::Disabled);
+    //    MeshPrimitive::quad().bindAndDraw();
 }
 
 Renderer::Renderer() {

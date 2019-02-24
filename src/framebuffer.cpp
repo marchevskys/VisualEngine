@@ -20,6 +20,7 @@ float IFrameBuffer::bind(int leftTopX, int leftTopY, int rightBottomX, int right
 }
 
 void IFrameBuffer::bindCullMode(IFrameBuffer::Cull cull) {
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     switch (cull) {
     case Cull::Front:
         glEnable(GL_CULL_FACE);

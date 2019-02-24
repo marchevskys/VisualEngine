@@ -12,6 +12,7 @@ class Mesh {
     Mesh(Mesh &&rhc);
     Mesh(const Mesh &rhc) = delete;
     Mesh(const MeshData &data);
+    Mesh(const std::vector<MeshData> &data);
     Mesh(MeshData &&data);
     ~Mesh();
 
@@ -23,7 +24,7 @@ class Mesh {
 
     void bindAndDraw() const;
     void bind() const;
-    void draw(int lodLevel = 0) const;
+    void draw(size_t lodLevel = 0) const;
 
     typedef std::set<Attribute> AttributeParams;
 
