@@ -5,73 +5,12 @@
 #include <glm/glm.hpp>
 #include <math.h>
 namespace Visual {
-std::vector<float> MeshData::makeSingleArray() const {
-    std::vector<float> array;
-
-    switch (m_type) {
-    case MeshData::Type::V:
-        array = m_vertices;
-        break;
-
-    case MeshData::Type::VN:
-        if (m_vertices.size() != m_normals.size()) {
-            DLOGN(m_vertices.size(), m_normals.size());
-            THROW("BAD VN");
-        }
-        array.reserve(m_vertices.size() + m_normals.size());
-        for (size_t i = 0; i < m_vertices.size(); i += 3) {
-            array.push_back(m_vertices[i]);
-            array.push_back(m_vertices[i + 1]);
-            array.push_back(m_vertices[i + 2]);
-            array.push_back(m_normals[i]);
-            array.push_back(m_normals[i + 1]);
-            array.push_back(m_normals[i + 2]);
-        }
-        break;
-
-    case MeshData::Type::VT:
-        array.reserve(m_vertices.size() + m_vertices.size());
-        for (size_t i = 0; i < m_vertices.size(); i += 3) {
-            array.push_back(m_vertices[i]);
-            array.push_back(m_vertices[i + 1]);
-            array.push_back(m_vertices[i + 2]);
-            array.push_back(m_uvs[i]);
-            array.push_back(m_uvs[i + 1]);
-        }
-        break;
-
-    case MeshData::Type::VTN:
-        if (m_vertices.size() != m_normals.size() || m_vertices.size() != m_uvs.size() / 2 * 3) {
-            DLOGN(m_vertices.size(), m_normals.size(), m_uvs.size());
-            THROW("BAD VTN");
-        }
-        array.reserve(m_vertices.size() + m_normals.size() + m_uvs.size());
-        for (size_t i = 0, j = 0; i < m_vertices.size(); i += 3) {
-            array.push_back(m_vertices[i]);
-            array.push_back(m_vertices[i + 1]);
-            array.push_back(m_vertices[i + 2]);
-            array.push_back(m_normals[i]);
-            array.push_back(m_normals[i + 1]);
-            array.push_back(m_normals[i + 2]);
-            array.push_back(m_uvs[j++]);
-            array.push_back(m_uvs[j++]);
-        }
-
-        break;
-    //case MeshData::Type::VTNTB:
-    //break;
-    default:
-        THROW("Bad mesh type");
-    }
-    return array;
-}
 
 MeshData::MeshData(MeshData &&other) {
     m_indices = std::move(other.m_indices);
     m_vertices = std::move(other.m_vertices);
     m_normals = std::move(other.m_normals);
     m_uvs = std::move(other.m_uvs);
-    m_type = other.m_type;
 }
 
 MeshData::MeshData(const MeshData &other) {
@@ -95,7 +34,7 @@ const std::vector<double> MeshData::getVertices() {
     return vec;
 }
 
-MeshData MeshPrimitives::icosahedron(MeshData::Type type) {
+MeshData MeshDataPrimitive::icosahedron() {
     MeshData data;
     std::vector<uint> indices{
         2, 1, 0, 3, 2, 0, 4, 3, 0, 5, 4, 0, 1, 5, 0, 11, 6, 7, 11, 7,
@@ -123,11 +62,11 @@ MeshData MeshPrimitives::icosahedron(MeshData::Type type) {
     data.m_uvs = std::move(uvs);
 
     data.m_indices = std::move(indices);
-    data.m_type = type;
+
     return data;
 }
 
-MeshData MeshPrimitives::plane(float scale, MeshData::Type type) {
+MeshData MeshDataPrimitive::plane(float scale) {
     std::vector<float> positions{-1, -1, 0, 1, 1, 0, 1, -1, 0, -1, -1, 0, -1, 1, 0, 1, 1, 0};
     std::vector<float> normals{0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1};
     std::vector<float> texcoords{0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1};
@@ -139,14 +78,14 @@ MeshData MeshPrimitives::plane(float scale, MeshData::Type type) {
     data.m_normals = std::move(normals);
     data.m_uvs = std::move(texcoords);
     data.m_indices.resize(6);
-    data.m_type = type;
+
     for (uint i = 0; i < 6; i++)
         data.m_indices[i] = i;
 
     return data;
 }
 
-MeshData MeshPrimitives::sphere(uint resolution, MeshData::Type type) {
+MeshData MeshDataPrimitive::sphere(uint resolution) {
 #define F(x) static_cast<float>(x)
 
     const float radius = 1.f;
@@ -196,12 +135,11 @@ MeshData MeshPrimitives::sphere(uint resolution, MeshData::Type type) {
         data.m_uvs.insert(data.m_uvs.end(), {t[0], t[1]});
 
     data.m_indices = std::move(indices);
-    data.m_type = type;
 
     return data;
 }
 
-MeshData MeshPrimitives::cube(float scale_x, float scale_y, float scale_z, MeshData::Type type) {
+MeshData MeshDataPrimitive::cube(float scale_x, float scale_y, float scale_z) {
     std::vector<float> positions{
         -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
         -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f,
@@ -239,7 +177,7 @@ MeshData MeshPrimitives::cube(float scale_x, float scale_y, float scale_z, MeshD
     data.m_normals = std::move(normals);
     data.m_uvs = std::move(texcoords);
     data.m_indices.resize(36);
-    data.m_type = type;
+
     for (uint i = 0; i < 36; i++)
         data.m_indices[i] = i;
 

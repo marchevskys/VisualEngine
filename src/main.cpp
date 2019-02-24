@@ -43,25 +43,31 @@ int main() {
         //        }
 
         //auto texture = std::make_shared<vi::Texture>("../GameTest2/textures/jupiter_diffuse.jpg");
-        auto sphereMesh = std::make_shared<vi::Mesh>(vi::MeshPrimitives::sphere(40, vi::MeshData::Type::VTN));
+        auto sphereMesh = std::make_shared<vi::Mesh>(vi::MeshDataPrimitive::sphere(40));
 
         auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.6, 0.04, 0.1});
-        glm::dmat4 sphereTransform = glm::translate(glm::dmat4(1), glm::dvec3(0, -1.3, 0));
+        glm::dmat4 sphereTransform = glm::translate(glm::dmat4(1), glm::dvec3(0, -1.3, 1));
         vi::Model sphereModel(&scene, sphereMesh, sphereMaterial, glm::value_ptr(sphereTransform));
 
         auto sphereMaterial2 = std::make_shared<vi::MaterialPBR>(vi::Color{0.3, 0.04, 0.8});
-        glm::dmat4 sphereTransform2 = glm::translate(glm::dmat4(1), glm::dvec3(0, 1.3, 0));
+        glm::dmat4 sphereTransform2 = glm::translate(glm::dmat4(1), glm::dvec3(0, 1.3, 1));
         vi::Model sphereModel2(&scene, sphereMesh, sphereMaterial2, glm::value_ptr(sphereTransform2));
 
         auto sphereMaterial3 = std::make_shared<vi::MaterialPBR>(vi::Color{0.8, 0.8, 0.8});
-        glm::dmat4 sphereTransform3 = glm::translate(glm::dmat4(1), glm::dvec3(40, 1.3, 0));
+        glm::dmat4 sphereTransform3 = glm::translate(glm::dmat4(1), glm::dvec3(40, 1.3, 10));
+        sphereTransform3 = glm::scale(sphereTransform3, glm::dvec3(10.0));
         vi::Model sphereModel3(&scene, sphereMesh, sphereMaterial3, glm::value_ptr(sphereTransform3));
+
+        auto sphereMaterial4 = std::make_shared<vi::MaterialPBR>(vi::Color{0.3, 0.3, 0.3});
+        glm::dmat4 sphereTransform4 = glm::translate(glm::dmat4(1), glm::dvec3(-240, 1.3, 100));
+        sphereTransform4 = glm::scale(sphereTransform4, glm::dvec3(100.0));
+        vi::Model sphereModel4(&scene, sphereMesh, sphereMaterial4, glm::value_ptr(sphereTransform4));
 
         vi::Color planeColor{0.1, 0.1, 0.1};
         auto planeMaterial = std::make_shared<vi::MaterialPBR>(planeColor);
         glm::dmat4 planeTransform(1);
-        planeTransform = glm::translate(planeTransform, glm::dvec3(0, 0, -1));
-        auto planeMesh = std::make_shared<vi::Mesh>(vi::MeshPrimitives::plane(3000.0f, vi::MeshData::Type::VTN));
+        planeTransform = glm::translate(planeTransform, glm::dvec3(0, 0, 0));
+        auto planeMesh = std::make_shared<vi::Mesh>(vi::MeshDataPrimitive::plane(3000.0f));
         vi::Model plane(&scene, planeMesh, planeMaterial, glm::value_ptr(planeTransform));
 
         vi::Camera camera(glm::dvec3(10, 10, 0), glm::dvec3(0, 0, 0));
@@ -80,7 +86,8 @@ int main() {
                 yy = yy < -M_PI_2 ? -M_PI_2 + 0.001 : yy;
                 vec = glm::rotate(vec, yy, glm::dvec3(0, 1, 0));
                 vec = glm::rotate(vec, xx, glm::dvec3(0, 0, 1));
-                distance *= 1.0 + Control::scrollOffset() * 0.1;
+                distance *= 1.0 + Control::scrollOffset() * 0.07;
+                distance = glm::clamp(distance, 0.5, 1000.0);
             }
 
             camera.set(vec * distance, glm::dvec3(0.0, 0.0, 0.0));

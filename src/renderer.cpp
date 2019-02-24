@@ -61,7 +61,7 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
 
     camera.setAR(window.bind());
     window.clear();
-    auto cascadeTexID = m_renderData->cascade.getDepthArrayTextureID();
+    //auto cascadeTexID = m_renderData->cascade.getDepthArrayTextureID();
     scene.m_data->forEvery([&](const Scene::ShaderGroup &shaderGroup) { // make nested loops great again (@Nikolay)
         const Shader3d *s = shaderGroup.arg;
         s->use();
@@ -91,7 +91,7 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
     screenQuadShader->setTexture(0);
     //screenQuadShader->setTexture(m_renderData->cascade.getDepthArrayTextureID());
     IFrameBuffer::bindDepthTest(IFrameBuffer::DepthTest::Disabled);
-    Mesh::Quad()->bindAndDraw();
+    MeshPrimitive::quad().bindAndDraw();
 }
 
 Renderer::Renderer() {

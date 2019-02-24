@@ -27,8 +27,8 @@ ShadowCascade::ShadowCascade(int size) {
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_CascadedTextureArray, 0);
-    //glDrawBuffer(GL_NONE);
-    //glReadBuffer(GL_NONE);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
     // restore default FBO
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 }
@@ -102,7 +102,7 @@ void ShadowCascade::prepareCascades(const Camera &camera, const glm::vec3 &light
         glm::vec3 maxExtents = glm::vec3(radius);
         glm::vec3 minExtents = -maxExtents;
 
-        glm::mat4 lightViewMatrix = glm::lookAt(frustumCenter - lightDir * minExtents.z, frustumCenter, glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 lightViewMatrix = glm::lookAt(frustumCenter - lightDir * minExtents.z, frustumCenter, glm::vec3(0.0f, 0.0f, 1.0f));
         glm::mat4 lightOrthoMatrix = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f, maxExtents.z - minExtents.z);
 
         // Store split distance and matrix in cascade

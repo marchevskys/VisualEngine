@@ -99,12 +99,12 @@ void main(){
 
     float fresnel = fresnelSchlick(viewDot, 0.04);
     float lightness =  shadow * lightDot;
+
+
     vec3 diffuse = lightness * finalColor;
     vec3 specular = 0.01 * lightness * vec3(1/(1-spec)) * fresnel;
-
     float ambMultiplier = (1 - viewDot) * (1 - lightness) * 0 + pow(0.5 - skyDot * 0.5, 3);
     vec3 ambient = finalColor * (ambMultiplier * 0.1 + 0.1);
-
     vec3 skyColor = fract(clamp(1 - skyReflection, -0.5, 1.0)) * fresnel * vec3(0.7, 0.7, 1.0);
     color = diffuse + specular + ambient + skyColor;
 

@@ -68,7 +68,7 @@ class ShaderShadow : public Shader {
     ~ShaderShadow(){};
 
   public:
-    static ShaderShadow *get() {
+    const static ShaderShadow *get() {
         static ShaderShadow shader("shadow.vert", "shadow.frag");
         return &shader;
     }
@@ -123,7 +123,7 @@ class ShaderPBR : public Shader3d {
     }
 
   public:
-    static Shader3d *get() {
+    const static Shader3d *get() {
         static ShaderPBR shader("PBR.vert", "PBR.frag");
         return &shader;
     }
