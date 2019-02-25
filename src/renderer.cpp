@@ -53,11 +53,17 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
             });
         });
     };
-
     m_renderData->cascade.prepareCascades(camera, lightDir);
     m_renderData->cascade.drawAll(renderShadow);
 
     //    glm::mat4 biasMatrix(0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.5, 0.5, 0.5, 1.0);
+    glm::dmat4 viewProjection = camera.getProjection() * camera.getView();
+    auto linearSize = [&](const glm::dmat4 &model) {
+        float objectRadius = glm::length(model[0] + model[1] + model[2]);
+        glm::dvec3 pos(model[3]);
+        auto dist = glm::distance(pos, camera.getPos<double>());
+        return objectRadius / dist;
+    };
 
     camera.setAR(window.bind());
     window.clear();
@@ -77,9 +83,12 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
             meshGroup.forEvery([&](const Scene::MaterialGroup &materialGroup) {
                 materialGroup.arg->apply();
                 materialGroup.forEvery([&](const Model *m) {
+                    int maxLodLevel = m->getMesh()->getLodCount();
                     auto &modelTransform = reinterpret_cast<const glm::dmat4 &>(*m->getTransform());
+                    double screenSize = linearSize(modelTransform);
+                    int lod = int(maxLodLevel - sqrt(screenSize) * 10.1);
                     s->setModel(modelTransform);
-                    m->getMesh()->draw(3);
+                    m->getMesh()->draw(glm::clamp(lod, 0, maxLodLevel - 1));
                 });
             });
         });

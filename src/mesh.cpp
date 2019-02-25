@@ -8,7 +8,7 @@
 #include <vector>
 namespace Visual {
 
-void makeSingleArray(const MeshData &data, std::vector<float> &vertexArray, std::vector<uint> indexArray) {
+void makeSingleArray(const MeshData &data, std::vector<float> &vertexArray) {
     if (data.m_vertices.size() != data.m_normals.size() || data.m_vertices.size() != data.m_uvs.size()) {
         DLOGN(data.m_vertices.size(), data.m_normals.size(), data.m_uvs.size());
         THROW("BAD VTN");
@@ -35,7 +35,7 @@ Mesh::Mesh(MeshData &&data) {
 
 void Mesh::setMeshData(const MeshData &mData) {
     std::vector<float> vertexArray;
-    //makeSingleArray(mData, vertexArray);
+    makeSingleArray(mData, vertexArray);
 
     glGenVertexArrays(1, &m_VAO);
     glGenBuffers(1, &m_VBO);

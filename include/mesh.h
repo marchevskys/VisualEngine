@@ -25,6 +25,7 @@ class Mesh {
     void bindAndDraw() const;
     void bind() const;
     void draw(size_t lodLevel = 0) const;
+    int getLodCount() const { return lodIndices.size(); };
 
     typedef std::set<Attribute> AttributeParams;
 
