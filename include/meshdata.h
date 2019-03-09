@@ -17,7 +17,7 @@ class MeshData {
 
   public:
     MeshData() {}
-    MeshData(MeshData &&other);
+    MeshData(MeshData &&other) noexcept;
     MeshData(const MeshData &other);
     void scale(float k);
 

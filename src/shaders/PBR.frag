@@ -4,7 +4,7 @@
 #define PI 3.1415926535
 #define MAX_SHADOW_MAP_CASCADE_COUNT 16
 
-#define DEBUG
+//#define DEBUG
 layout(early_fragment_tests) in;
 
 uniform mat4 model;
@@ -80,11 +80,30 @@ void main(){
             cascadeIndex = i + 1;
 
     vec4 shadowCoord = (biasMat * cascadeTransforms[cascadeIndex]) * vs.wp;
+    ////////////////////////////////////////////////////////////////
+//    vec3 colorArray[4] = vec3[](vec3(1,0,0), vec3(0,1,0), vec3(0,0,1), vec3(0,0,0));
+//    color = vec3(0);
+//    for(int i = 0; i < shadowCascadeCout; i++){
+//        vec4 shadowCoord = (biasMat * cascadeTransforms[i]) * vs.wp;
+//        float pattern = fract((gl_FragCoord.x - gl_FragCoord.y) * 0.1) > 0.1 ? 0.0 : 0.24;
+//        if(shadowCoord.x > 0 && shadowCoord.x < 1 && shadowCoord.y > 0 && shadowCoord.y < 1){
+//            vec2 c = 2.0 * (shadowCoord.xy - 0.5);
+//            c = pow(c, vec2(2));
+
+//            if(i == cascadeIndex)
+//                color += colorArray[i] * (max(c.x, c.y)) * texture(shadowMap, vec3(shadowCoord.xy, i)).r;
+//            else
+//                color += colorArray[i] * (max(c.x, c.y)) * texture(shadowMap, vec3(shadowCoord.xy, i)).r * pattern;
+//        }
+//    }
+//    return;
+    ///////////////////////////////////////////////////////////////
+
 
     float shadow = 0.0;
     int discSize = 16;
     for(int i = 0 ; i < discSize; i++){
-        vec2 pd = 0.004 * poissonDisk[i] * gl_FragCoord.w;
+        vec2 pd = (1.0 / 2048.0) * poissonDisk[i] * (gl_FragCoord.w * 3 + 1);
 #ifdef DEBUG
         shadow += texture(shadowMap, vec3(shadowCoord.xy + pd, cascadeIndex)).r - 0.5 - shadowCoord.z * 0.5 < 0 ? 0.0 : 1.0;
 #else

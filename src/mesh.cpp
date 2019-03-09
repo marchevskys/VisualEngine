@@ -79,14 +79,17 @@ Mesh::Mesh(const std::vector<MeshData> &meshDatas) {
     std::vector<GLfloat> vertexArray;
     std::vector<GLuint> indexArray;
 
+    glm::vec3 minBounds(FLT_MAX);
+    glm::vec3 maxBounds(-FLT_MAX);
     for (const auto &data : meshDatas) {
         auto vertexCount = data.m_vertices.size();
         auto indexCount = data.m_indices.size();
-
         for (size_t i = 0; i < vertexCount; ++i) {
-            auto &v = data.m_vertices[i];
-            auto &n = data.m_normals[i];
-            auto &t = data.m_uvs[i];
+            const auto &v = data.m_vertices[i];
+            const auto &n = data.m_normals[i];
+            const auto &t = data.m_uvs[i];
+            minBounds = glm::min(v, minBounds);
+            minBounds = glm::max(v, maxBounds);
             vertexArray.insert(vertexArray.end(), {v.x, v.y, v.z});
             vertexArray.insert(vertexArray.end(), {n.x, n.y, n.z});
             vertexArray.insert(vertexArray.end(), {t.x, t.y});
@@ -99,6 +102,8 @@ Mesh::Mesh(const std::vector<MeshData> &meshDatas) {
         indexOffset += indexCount;
         vertexOffset += vertexCount;
     }
+    m_obb.min = minBounds;
+    m_obb.max = maxBounds;
 
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
     glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertexArray.size() * sizeof(GLfloat)),
@@ -159,22 +164,6 @@ Mesh::Mesh(Mesh &&rhc) {
 const Mesh &MeshPrimitive::quad() {
     static Mesh qu(MeshDataPrimitive::plane(1.0f));
     return qu;
-}
-
-const Mesh &MeshPrimitive::sphere() {
-    Mesh::AttributeParams params;
-    params.insert({Mesh::Attribute::Vertex});
-    params.insert({Mesh::Attribute::Normal});
-    params.insert({Mesh::Attribute::TexCoord});
-    std::vector<MeshData> meshDataLodPack{
-        MeshDataPrimitive::sphere(40),
-        MeshDataPrimitive::sphere(20),
-        MeshDataPrimitive::sphere(10),
-        MeshDataPrimitive::sphere(5),
-        MeshDataPrimitive::sphere(2),
-    };
-    static Mesh sphereLodMesh(meshDataLodPack);
-    return sphereLodMesh;
 }
 
 } // namespace Visual

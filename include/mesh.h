@@ -2,6 +2,8 @@
 #define MESH_H
 #include <set>
 #include <vector>
+
+#include <glm/glm.hpp>
 namespace Visual {
 class MeshData;
 class Mesh {
@@ -31,8 +33,8 @@ class Mesh {
 
   private:
     struct OBB {
-        float p1[3]{0};
-        float p3[3]{0};
+        glm::vec3 min;
+        glm::vec3 max;
     } m_obb;
 
     struct LODIndices {
@@ -50,7 +52,6 @@ class Mesh {
 class MeshPrimitive {
   public:
     static const Mesh &quad();
-    static const Mesh &sphere();
 };
 } // namespace Visual
 #endif // MESH_H

@@ -23,7 +23,7 @@ ShadowCascade::ShadowCascade(int size) {
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    //glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_CascadedTextureArray, 0);
@@ -118,7 +118,7 @@ void ShadowCascade::drawAll(std::function<void(const glm::mat4 &)> renderFunctio
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_DEPTH_CLAMP);
-    glCullFace(GL_BACK);
+    //glCullFace(GL_BACK);
     glBindFramebuffer(GL_FRAMEBUFFER, mCascadedShadowFBO);
     glViewport(0, 0, mShadowMapSize, mShadowMapSize);
     for (int i = 0; i < SHADOW_MAP_CASCADE_COUNT; i++) {

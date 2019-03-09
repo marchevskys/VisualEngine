@@ -37,6 +37,7 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
     glm::vec4 lightDir4{lightDir, 0};
 
     auto shadowShader = ShaderShadow::get();
+    IFrameBuffer::bindCullMode(IFrameBuffer::Cull::Front);
     auto renderShadow = [&](const glm::mat4 &viewProjection) {
         shadowShader->use();
         shadowShader->setViewProjection(viewProjection);

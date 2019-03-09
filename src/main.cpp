@@ -5,6 +5,7 @@
 #include "material.h"
 #include "mesh.h"
 #include "meshdata.h"
+#include "meshloader.h"
 #include "model.h"
 #include "renderer.h"
 #include "scene.h"
@@ -27,12 +28,12 @@ int main() {
 
     try {
         Window window(1024, 768, "Main window", false);
-        window.setCullMode(vi::IFrameBuffer::Cull::Front);
+        window.setCullMode(vi::IFrameBuffer::Cull::Back);
         vi::Scene scene;
 
         //auto texture = std::make_shared<vi::Texture>("../GameTest2/textures/jupiter_diffuse.jpg");
         std::vector<vi::MeshData> sphereData;
-        sphereData.reserve(5);
+        //sphereData.reserve(5);
         sphereData.emplace_back(vi::MeshDataPrimitive::sphere(40));
         sphereData.emplace_back(vi::MeshDataPrimitive::sphere(20));
         sphereData.emplace_back(vi::MeshDataPrimitive::sphere(10));
@@ -45,9 +46,11 @@ int main() {
         glm::dmat4 sphereTransform = glm::translate(glm::dmat4(1), glm::dvec3(0, -1.3, 1));
         vi::Model sphereModel(&scene, sphereMesh, sphereMaterial, glm::value_ptr(sphereTransform));
 
+        auto horseSharedData = std::make_shared<vi::Mesh>(vi::MeshLoader::load("horse.obj"));
+
         auto sphereMaterial2 = std::make_shared<vi::MaterialPBR>(vi::Color{0.3, 0.04, 0.8});
-        glm::dmat4 sphereTransform2 = glm::translate(glm::dmat4(1), glm::dvec3(0, 1.3, 1));
-        vi::Model sphereModel2(&scene, sphereMesh, sphereMaterial2, glm::value_ptr(sphereTransform2));
+        glm::dmat4 sphereTransform2 = glm::translate(glm::dmat4(1), glm::dvec3(0, 1.3, 0));
+        vi::Model sphereModel2(&scene, horseSharedData, sphereMaterial2, glm::value_ptr(sphereTransform2));
 
         auto sphereMaterial3 = std::make_shared<vi::MaterialPBR>(vi::Color{0.8, 0.8, 0.8});
         glm::dmat4 sphereTransform3 = glm::translate(glm::dmat4(1), glm::dvec3(40, 1.3, 10));

@@ -6,7 +6,7 @@
 #include <math.h>
 namespace Visual {
 
-MeshData::MeshData(MeshData &&other) {
+MeshData::MeshData(MeshData &&other) noexcept {
     m_indices = std::move(other.m_indices);
     m_vertices = std::move(other.m_vertices);
     m_normals = std::move(other.m_normals);
@@ -58,7 +58,7 @@ MeshData MeshDataPrimitive::icosahedron() {
 }
 
 MeshData MeshDataPrimitive::plane(float scale) {
-    std::vector<glm::vec3> positions{{-1, -1, 0}, {1, 1, 0}, {1, -1, 0}, {-1, -1, 0}, {-1, 1, 0}, {1, 1, 0}};
+    std::vector<glm::vec3> positions{{-1, -1, 0}, {1, -1, 0}, {1, 1, 0}, {-1, -1, 0}, {1, 1, 0}, {-1, 1, 0}};
     std::vector<glm::vec3> normals{{0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}};
     std::vector<glm::vec2> texcoords{{0, 0}, {1, 1}, {1, 0}, {0, 0}, {0, 1}, {1, 1}};
     for (auto &p : positions) {
@@ -106,8 +106,8 @@ MeshData MeshDataPrimitive::sphere(uint resolution) {
             auto offset_j = (i + 0) * (numMeridian + 1) + j + 1;
             auto offset_i = (i + 1) * (numMeridian + 1) + j + 0;
             auto offsetij = (i + 1) * (numMeridian + 1) + j + 1;
-            indices.insert(indices.end(), {offset__, offset_j, offset_i});
-            indices.insert(indices.end(), {offset_j, offsetij, offset_i});
+            indices.insert(indices.end(), {offset__, offset_i, offset_j});
+            indices.insert(indices.end(), {offset_j, offset_i, offsetij});
         }
 
     std::vector<glm::vec2> texCoords(positions.size());
@@ -127,42 +127,48 @@ MeshData MeshDataPrimitive::sphere(uint resolution) {
 MeshData MeshDataPrimitive::cube(glm::vec3 scale) {
 
     std::vector<glm::vec3> positions{
-        {-1.0f, -1.0f, -1.0f}, {1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, -1.0f}, {1.0f, 1.0f, -1.0f}, {-1.0f, 1.0f, -1.0f}, {-1.0f, -1.0f, -1.0f},
-
-        {1.0f, 1.0f, 1.0f},
-        {-1.0f, -1.0f, 1.0f},
-        {-1.0f, 1.0f, 1.0f},
-        {-1.0f, -1.0f, 1.0f},
-        {1.0f, 1.0f, 1.0f},
-        {1.0f, -1.0f, 1.0f},
-
-        {-1.0f, 1.0f, 1.0f},
         {-1.0f, -1.0f, -1.0f},
-        {-1.0f, 1.0f, -1.0f},
-        {-1.0f, -1.0f, -1.0f},
-        {-1.0f, 1.0f, 1.0f},
-        {-1.0f, -1.0f, 1.0f},
-
-        {1.0f, 1.0f, 1.0f},
         {1.0f, 1.0f, -1.0f},
         {1.0f, -1.0f, -1.0f},
-        {1.0f, -1.0f, -1.0f},
-        {1.0f, -1.0f, 1.0f},
-        {1.0f, 1.0f, 1.0f},
-
-        {-1.0f, -1.0f, -1.0f},
-        {1.0f, -1.0f, 1.0f},
-        {1.0f, -1.0f, -1.0f},
-        {1.0f, -1.0f, 1.0f},
-        {-1.0f, -1.0f, -1.0f},
-        {-1.0f, -1.0f, 1.0f},
-
-        {-1.0f, 1.0f, -1.0f},
         {1.0f, 1.0f, -1.0f},
-        {1.0f, 1.0f, 1.0f},
+        {-1.0f, -1.0f, -1.0f},
+        {-1.0f, 1.0f, -1.0f},
+
         {1.0f, 1.0f, 1.0f},
         {-1.0f, 1.0f, 1.0f},
-        {-1.0f, 1.0f, -1.0f}};
+        {-1.0f, -1.0f, 1.0f},
+        {-1.0f, -1.0f, 1.0f},
+        {1.0f, -1.0f, 1.0f},
+        {1.0f, 1.0f, 1.0f},
+
+        {-1.0f, 1.0f, 1.0f},
+        {-1.0f, 1.0f, -1.0f},
+        {-1.0f, -1.0f, -1.0f},
+        {-1.0f, -1.0f, -1.0f},
+        {-1.0f, -1.0f, 1.0f},
+        {-1.0f, 1.0f, 1.0f},
+
+        {1.0f, 1.0f, 1.0f},
+        {1.0f, -1.0f, -1.0f},
+        {1.0f, 1.0f, -1.0f},
+        {1.0f, -1.0f, -1.0f},
+        {1.0f, 1.0f, 1.0f},
+        {1.0f, -1.0f, 1.0f},
+
+        {-1.0f, -1.0f, -1.0f},
+        {1.0f, -1.0f, -1.0f},
+        {1.0f, -1.0f, 1.0f},
+        {1.0f, -1.0f, 1.0f},
+        {-1.0f, -1.0f, 1.0f},
+        {-1.0f, -1.0f, -1.0f},
+
+        {-1.0f, 1.0f, -1.0f},
+        {1.0f, 1.0f, 1.0f},
+        {1.0f, 1.0f, -1.0f},
+        {1.0f, 1.0f, 1.0f},
+        {-1.0f, 1.0f, -1.0f},
+        {-1.0f, 1.0f, 1.0f},
+    };
 
     std::vector<glm::vec3> normals{
         {0.0f, 0.0f, -1.0f},
