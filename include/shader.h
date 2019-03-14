@@ -114,6 +114,24 @@ class Shader3d : public Shader {
     }
 };
 
+class ShaderPlain : public Shader3d {
+  protected:
+    GLint diffuseColorId;
+    ShaderPlain(const char *v, const char *f) : Shader3d(v, f) {
+        m_name = "Plain";
+        diffuseColorId = getLocation("diffuseColor");
+    }
+
+  public:
+    const static Shader3d *get() {
+        static ShaderPlain shader("PBR.vert", "solid.frag");
+        return &shader;
+    }
+    void setDiffuseColor(const glm::vec3 &color) const {
+        set(diffuseColorId, color);
+    };
+};
+
 class ShaderPBR : public Shader3d {
   protected:
     GLint diffuseColorId;

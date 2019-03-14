@@ -8,108 +8,42 @@
 #include <vector>
 namespace Visual {
 
-void makeSingleArray(const MeshData &data, std::vector<float> &vertexArray) {
-    if (data.m_vertices.size() != data.m_normals.size() || data.m_vertices.size() != data.m_uvs.size()) {
-        DLOGN(data.m_vertices.size(), data.m_normals.size(), data.m_uvs.size());
-        THROW("BAD VTN");
-    }
+void fillArrays(const MeshData &data, std::vector<GLfloat> &vertexArray, std::vector<GLuint> &indexArray,
+                std::vector<Mesh::LODIndices> &lodIndices, size_t &indexOffset, size_t &vertexOffset,
+                Mesh::OBB &bbox) {
 
-    for (size_t i = 0; i < data.m_vertices.size(); ++i) {
-        auto &v = data.m_vertices[i];
-        auto &n = data.m_normals[i];
-        auto &t = data.m_uvs[i];
+    auto vertexCount = data.m_vertices.size();
+    auto indexCount = data.m_indices.size();
+    for (size_t i = 0; i < vertexCount; ++i) {
+        const auto &v = data.m_vertices[i];
+        const auto &n = data.m_normals[i];
+        const auto &t = data.m_uvs[i];
+        bbox.coverPoint(v);
         vertexArray.insert(vertexArray.end(), {v.x, v.y, v.z});
         vertexArray.insert(vertexArray.end(), {n.x, n.y, n.z});
         vertexArray.insert(vertexArray.end(), {t.x, t.y});
     }
-}
 
-Mesh::Mesh(const MeshData &data) {
-    setMeshData(data);
-}
+    for (size_t i = 0; i < indexCount; ++i) // push every LOD one after another
+        indexArray.push_back(data.m_indices[i] + vertexOffset);
 
-Mesh::Mesh(MeshData &&data) {
-    MeshData mdata(std::move(data));
-    setMeshData(mdata);
-}
+    lodIndices.push_back({indexOffset, indexCount});
 
-void Mesh::setMeshData(const MeshData &mData) {
-    std::vector<float> vertexArray;
-    makeSingleArray(mData, vertexArray);
+    indexOffset += indexCount;
+    vertexOffset += vertexCount;
+};
 
-    glGenVertexArrays(1, &m_VAO);
-    glGenBuffers(1, &m_VBO);
-    glGenBuffers(1, &m_EBO);
-    glBindVertexArray(m_VAO);
+void pushMeshOnGPU(GLuint &VAO, GLuint &VBO, GLuint &EBO, std::vector<GLfloat> &vertexArray, std::vector<GLuint> &indexArray) {
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+    glBindVertexArray(VAO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertexArray.size() * sizeof(GLfloat)),
-                 vertexArray.data(), GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(mData.m_indices.size() * sizeof(GLuint)),
-                 mData.m_indices.data(), GL_STATIC_DRAW);
-    lodIndices.push_back({0, mData.m_indices.size()});
-
-    ////////////////////////////////////////////////////////
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
-                          reinterpret_cast<GLvoid *>(0 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
-                          reinterpret_cast<GLvoid *>(3 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
-                          reinterpret_cast<GLvoid *>(6 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(2);
-    ////////////////////////////////////////////////////////
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-    DLOG("Mesh created");
-}
-
-Mesh::Mesh(const std::vector<MeshData> &meshDatas) {
-    glGenVertexArrays(1, &m_VAO);
-    glGenBuffers(1, &m_VBO);
-    glGenBuffers(1, &m_EBO);
-    glBindVertexArray(m_VAO);
-
-    size_t indexOffset = 0;
-    size_t vertexOffset = 0;
-
-    std::vector<GLfloat> vertexArray;
-    std::vector<GLuint> indexArray;
-
-    glm::vec3 minBounds(FLT_MAX);
-    glm::vec3 maxBounds(-FLT_MAX);
-    for (const auto &data : meshDatas) {
-        auto vertexCount = data.m_vertices.size();
-        auto indexCount = data.m_indices.size();
-        for (size_t i = 0; i < vertexCount; ++i) {
-            const auto &v = data.m_vertices[i];
-            const auto &n = data.m_normals[i];
-            const auto &t = data.m_uvs[i];
-            minBounds = glm::min(v, minBounds);
-            minBounds = glm::max(v, maxBounds);
-            vertexArray.insert(vertexArray.end(), {v.x, v.y, v.z});
-            vertexArray.insert(vertexArray.end(), {n.x, n.y, n.z});
-            vertexArray.insert(vertexArray.end(), {t.x, t.y});
-        }
-
-        for (size_t i = 0; i < indexCount; ++i) {
-            indexArray.push_back(data.m_indices[i] + vertexOffset);
-        }
-        lodIndices.push_back({indexOffset, indexCount}); // indexoffset/ indexcount
-        indexOffset += indexCount;
-        vertexOffset += vertexCount;
-    }
-    m_obb.min = minBounds;
-    m_obb.max = maxBounds;
-
-    glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertexArray.size() * sizeof(GLfloat)),
                  vertexArray.data(), GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(indexArray.size() * sizeof(GLuint)),
                  indexArray.data(), GL_STATIC_DRAW);
 
@@ -130,18 +64,37 @@ Mesh::Mesh(const std::vector<MeshData> &meshDatas) {
     DLOG("Mesh created");
 }
 
+Mesh::Mesh(const MeshData &data) {
+    std::vector<GLfloat> vertexArray;
+    std::vector<GLuint> indexArray;
+    size_t indexOffset = 0, vertexOffset = 0;
+    fillArrays(data, vertexArray, indexArray, m_lodIndices, indexOffset, vertexOffset, m_obb);
+    m_obb.process();
+    pushMeshOnGPU(m_VAO, m_VBO, m_EBO, vertexArray, indexArray);
+};
+
+Mesh::Mesh(const std::vector<MeshData> &meshDatas) {
+    std::vector<GLfloat> vertexArray;
+    std::vector<GLuint> indexArray;
+    size_t indexOffset = 0, vertexOffset = 0;
+    for (const auto &data : meshDatas)
+        fillArrays(data, vertexArray, indexArray, m_lodIndices, indexOffset, vertexOffset, m_obb);
+    m_obb.process();
+    pushMeshOnGPU(m_VAO, m_VBO, m_EBO, vertexArray, indexArray);
+}
+
 void Mesh::bind() const {
     glBindVertexArray(m_VAO);
 }
 
 void Mesh::draw(size_t lodLevel) const {
-    assert(lodLevel < lodIndices.size());
-    glDrawElements(GL_TRIANGLES, lodIndices[lodLevel].m_count,
-                   GL_UNSIGNED_INT, reinterpret_cast<void *>(lodIndices[lodLevel].m_offset * sizeof(GLuint)));
+    assert(lodLevel < m_lodIndices.size());
+    glDrawElements(GL_TRIANGLES, m_lodIndices[lodLevel].m_count,
+                   GL_UNSIGNED_INT, reinterpret_cast<void *>(m_lodIndices[lodLevel].m_offset * sizeof(GLuint)));
 }
-void Mesh::bindAndDraw() const {
-    bind();
-    draw(); // :)
+void Mesh::bindAndDraw(size_t lodLevel) const {
+    bind(); // bindAndDraw consists of bind and draw :)
+    draw(lodLevel);
 }
 
 Mesh::~Mesh() {
@@ -157,12 +110,18 @@ Mesh::Mesh(Mesh &&rhc) {
     m_VAO = rhc.m_VAO;
     m_VBO = rhc.m_VBO;
     m_EBO = rhc.m_EBO;
-    lodIndices = rhc.lodIndices;
+    m_obb = rhc.m_obb;
+    m_lodIndices = std::move(rhc.m_lodIndices);
     rhc.m_VAO = 0;
-};
+}
 
 const Mesh &MeshPrimitive::quad() {
     static Mesh qu(MeshDataPrimitive::plane(1.0f));
+    return qu;
+}
+
+const Mesh &MeshPrimitive::cube() {
+    static Mesh qu(MeshDataPrimitive::cube());
     return qu;
 }
 

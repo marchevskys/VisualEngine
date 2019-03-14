@@ -62,4 +62,13 @@ void Scene::forEveryModel(std::function<void(Model *)> func) {
     });
 }
 
+void Scene::forEveryModel(std::function<void(const Model *)> func) const {
+    m_data->forEvery([&func](const ShaderGroup &shaderGroup) {
+        shaderGroup.forEvery([&func](const MeshGroup &meshGroup) {
+            meshGroup.forEvery([&func](const MaterialGroup &materailGroup) {
+                materailGroup.forEvery([&func](const Model *m) { func(m); }); // yeah!
+            });
+        });
+    });
+}
 } // namespace Visual

@@ -15,7 +15,6 @@ class Model {
 
   public:
     Model(Scene *scene, shared_ptr<Mesh> mesh, shared_ptr<IMaterial> material, double *transform);
-
     Model(Model &&other);
     Model(const Model &other);
     Model &operator=(const Model &other);
@@ -26,8 +25,7 @@ class Model {
     inline const double *getTransform() const { return m_transform; }
 
   private:
-    Model &
-    assign(const Model &other);
+    Model &assign(const Model &other);
     Scene *m_scene;
     double *m_transform;
     shared_ptr<Mesh> m_mesh;

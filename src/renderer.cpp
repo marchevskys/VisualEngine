@@ -38,6 +38,7 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
 
     auto shadowShader = ShaderShadow::get();
     IFrameBuffer::bindCullMode(IFrameBuffer::Cull::Front);
+
     auto renderShadow = [&](const glm::mat4 &viewProjection) {
         shadowShader->use();
         shadowShader->setViewProjection(viewProjection);
@@ -58,7 +59,6 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
     m_renderData->cascade.drawAll(renderShadow);
 
     //    glm::mat4 biasMatrix(0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.5, 0.5, 0.5, 1.0);
-    glm::dmat4 viewProjection = camera.getProjection() * camera.getView();
     auto linearSize = [&](const glm::dmat4 &model) {
         float objectRadius = glm::length(model[0] + model[1] + model[2]);
         glm::dvec3 pos(model[3]);
@@ -86,14 +86,36 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
                 materialGroup.forEvery([&](const Model *m) {
                     int maxLodLevel = m->getMesh()->getLodCount();
                     auto &modelTransform = reinterpret_cast<const glm::dmat4 &>(*m->getTransform());
-                    double screenSize = linearSize(modelTransform);
-                    int lod = int(maxLodLevel - sqrt(screenSize) * 10.1);
+                    double screenSpaceSize = linearSize(modelTransform);
+                    int lod = int(maxLodLevel - sqrt(screenSpaceSize) * 10.1);
                     s->setModel(modelTransform);
                     m->getMesh()->draw(glm::clamp(lod, 0, maxLodLevel - 1));
                 });
             });
         });
     });
+
+    IFrameBuffer::bindDepthTest(IFrameBuffer::DepthTest::Disabled);
+    IFrameBuffer::bindFillMode(IFrameBuffer::FillMode::Line);
+    auto &cube = MeshPrimitive::cube();
+    cube.bind();
+    auto solidShader = ShaderPlain::get();
+    solidShader->use();
+    solidShader->setView(camera.getView());
+    solidShader->setProjection(camera.getProjection());
+    scene.forEveryModel([&](const Model *m) {
+        auto &modelTransform = reinterpret_cast<const glm::dmat4 &>(*m->getTransform());
+        auto mesh = m->getMesh();
+        glm::dvec3 center(mesh->getOBB().center);
+        glm::dvec3 scale(mesh->getOBB().scale);
+        glm::dmat4 transform = glm::translate(modelTransform, center);
+        transform = glm::scale(transform, scale);
+        solidShader->setModel(transform);
+        cube.draw();
+        // draw (box)
+    });
+    IFrameBuffer::bindFillMode(IFrameBuffer::FillMode::Fill);
+    IFrameBuffer::bindDepthTest(IFrameBuffer::DepthTest::Enabled);
 
     //    auto screenQuadShader = ShaderScreenQuad::get();
     //    screenQuadShader->use();

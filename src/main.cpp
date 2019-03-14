@@ -29,28 +29,26 @@ int main() {
     try {
         Window window(1024, 768, "Main window", false);
         window.setCullMode(vi::IFrameBuffer::Cull::Back);
+        window.setDepthTest(vi::IFrameBuffer::DepthTest::Enabled);
         vi::Scene scene;
 
         //auto texture = std::make_shared<vi::Texture>("../GameTest2/textures/jupiter_diffuse.jpg");
         std::vector<vi::MeshData> sphereData;
-        //sphereData.reserve(5);
         sphereData.emplace_back(vi::MeshDataPrimitive::sphere(40));
         sphereData.emplace_back(vi::MeshDataPrimitive::sphere(20));
         sphereData.emplace_back(vi::MeshDataPrimitive::sphere(10));
         sphereData.emplace_back(vi::MeshDataPrimitive::sphere(5));
         sphereData.emplace_back(vi::MeshDataPrimitive::sphere(2));
-
         auto sphereMesh = std::make_shared<vi::Mesh>(sphereData);
 
-        auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.6, 0.04, 0.1});
+        auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.6, 0.2, 0.05});
         glm::dmat4 sphereTransform = glm::translate(glm::dmat4(1), glm::dvec3(0, -1.3, 1));
         vi::Model sphereModel(&scene, sphereMesh, sphereMaterial, glm::value_ptr(sphereTransform));
 
-        auto horseSharedData = std::make_shared<vi::Mesh>(vi::MeshLoader::load("horse.obj"));
-
-        auto sphereMaterial2 = std::make_shared<vi::MaterialPBR>(vi::Color{0.3, 0.04, 0.8});
+        auto horseMesh = std::make_shared<vi::Mesh>(vi::MeshLoader::load("horse.obj"));
+        auto sphereMaterial2 = std::make_shared<vi::MaterialPBR>(vi::Color{0.1, 0.2, 0.8});
         glm::dmat4 sphereTransform2 = glm::translate(glm::dmat4(1), glm::dvec3(0, 1.3, 0));
-        vi::Model sphereModel2(&scene, horseSharedData, sphereMaterial2, glm::value_ptr(sphereTransform2));
+        vi::Model sphereModel2(&scene, horseMesh, sphereMaterial2, glm::value_ptr(sphereTransform2));
 
         auto sphereMaterial3 = std::make_shared<vi::MaterialPBR>(vi::Color{0.8, 0.8, 0.8});
         glm::dmat4 sphereTransform3 = glm::translate(glm::dmat4(1), glm::dvec3(40, 1.3, 10));
@@ -89,7 +87,8 @@ int main() {
                 distance = glm::clamp(distance, 0.5, 1000.0);
             }
 
-            camera.set(vec * distance, glm::dvec3(0.0, 0.0, 0.0));
+            glm::dvec3 focusCenter(0.0, 0.0, 1.0);
+            camera.set(vec * distance + focusCenter, focusCenter);
             renderer.draw(scene, camera, window);
 
             window.refresh();

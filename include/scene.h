@@ -66,6 +66,7 @@ class Scene {
     void addModel(Model *m);
     void removeModel(Model *m);
     void forEveryModel(std::function<void(Model *)> func);
+    void forEveryModel(std::function<void(const Model *)> func) const;
 };
 
 } // namespace Visual

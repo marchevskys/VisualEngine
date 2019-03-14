@@ -60,15 +60,16 @@ const mat4 biasMat = mat4(0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 1.0,
 
 
 void main(){
-
     vec3 nn = normalize(vs.n);
+
+
     vec3 viewDir = normalize(viewPos - vs.wp.xyz);
 
     vec3 lDir = lightDir.rgb;
 
     float lightDot = clamp(dot(lDir, nn), 0, 1);
     float viewDot = abs(dot(viewDir, nn));
-    float spec = clamp(-dot(reflect(viewDir, nn), lDir), 0.0, 1.0);
+    float spec = -dot(reflect(viewDir, nn), lDir);
     vec3 skyDir = vec3(0, 0, 1);
 
     vec3 finalColor = diffuseColor;
@@ -121,11 +122,13 @@ void main(){
 
 
     vec3 diffuse = lightness * finalColor;
-    vec3 specular = 0.01 * lightness * vec3(1/(1-spec)) * fresnel;
+    vec3 specular = 0.01 * lightness * vec3(1/(1-clamp(spec, 0,1))) * fresnel;
     float ambMultiplier = (1 - viewDot) * (1 - lightness) * 0 + pow(0.5 - skyDot * 0.5, 3);
     vec3 ambient = finalColor * (ambMultiplier * 0.1 + 0.1);
     vec3 skyColor = fract(clamp(1 - skyReflection, -0.5, 1.0)) * fresnel * vec3(0.7, 0.7, 1.0);
     color = diffuse + specular + ambient + skyColor;
+
+
 
     color = color / (color + vec3(1.0));
     color = vec3(1) - pow(vec3(1) - color, vec3(4));
