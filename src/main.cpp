@@ -13,6 +13,7 @@
 #include "window.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/random.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/rotate_vector.hpp>
@@ -28,8 +29,6 @@ int main() {
 
     try {
         Window window(1024, 768, "Main window", false);
-        window.setCullMode(vi::IFrameBuffer::Cull::Back);
-        window.setDepthTest(vi::IFrameBuffer::DepthTest::Enabled);
         vi::Scene scene;
 
         //auto texture = std::make_shared<vi::Texture>("../GameTest2/textures/jupiter_diffuse.jpg");
@@ -41,14 +40,21 @@ int main() {
         sphereData.emplace_back(vi::MeshDataPrimitive::sphere(2));
         auto sphereMesh = std::make_shared<vi::Mesh>(sphereData);
 
-        auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.6, 0.2, 0.05});
-        glm::dmat4 sphereTransform = glm::translate(glm::dmat4(1), glm::dvec3(0, -1.3, 1));
+        auto torusMesh = std::make_shared<vi::Mesh>(vi::MeshLoader::load("torus2.obj"));
+        auto torusMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.5, 0.02, 0.1});
+        glm::dmat4 torusTransform = glm::translate(glm::dmat4(1), glm::dvec3(0, -1.5, 0.7));
+        torusTransform = glm::scale(torusTransform, glm::dvec3(0.005));
+        vi::Model torusModel(&scene, torusMesh, torusMaterial, glm::value_ptr(torusTransform));
+
+        auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.8, 0.8, 0.8});
+        glm::dmat4 sphereTransform = glm::translate(glm::dmat4(1), glm::dvec3(0, -1.5, 2.0));
+        sphereTransform = glm::scale(sphereTransform, glm::dvec3(0.7));
         vi::Model sphereModel(&scene, sphereMesh, sphereMaterial, glm::value_ptr(sphereTransform));
 
         auto horseMesh = std::make_shared<vi::Mesh>(vi::MeshLoader::load("horse.obj"));
-        auto sphereMaterial2 = std::make_shared<vi::MaterialPBR>(vi::Color{0.1, 0.2, 0.8});
-        glm::dmat4 sphereTransform2 = glm::translate(glm::dmat4(1), glm::dvec3(0, 1.3, 0));
-        vi::Model sphereModel2(&scene, horseMesh, sphereMaterial2, glm::value_ptr(sphereTransform2));
+        auto horseMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.15, 0.1, 0.5});
+        glm::dmat4 horseTransform = glm::translate(glm::dmat4(1), glm::dvec3(0, 1.5, 0));
+        vi::Model horseModel(&scene, horseMesh, horseMaterial, glm::value_ptr(horseTransform));
 
         auto sphereMaterial3 = std::make_shared<vi::MaterialPBR>(vi::Color{0.8, 0.8, 0.8});
         glm::dmat4 sphereTransform3 = glm::translate(glm::dmat4(1), glm::dvec3(40, 1.3, 10));

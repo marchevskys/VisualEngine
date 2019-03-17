@@ -7,25 +7,8 @@ typedef unsigned int GLuint;
 class ITexture;
 class IFrameBuffer {
   public:
-    // clang-format off
-    enum class Cull       { Front, Back, None }                        m_cullFace =    Cull::None;
-    enum class Blend      { Disabled, OneMinusSourceAlpha, Additive }  m_blendState =  Blend::Disabled;
-    enum class DepthTest  { Enabled, Disabled }                        m_DepthTest =   DepthTest::Enabled;
-    enum class FillMode   { Fill, Line }                               m_FillMode =    FillMode::Fill;
-    // clang-format on
-
     float bind() const;
     float bind(int leftTopX, int leftTopY, int rightBottomX, int rightBottomY) const;
-
-    void setCullMode(Cull cull) { m_cullFace = cull; }
-    void setBlendState(Blend blend) { m_blendState = blend; }
-    void setDepthTest(DepthTest dt) { m_DepthTest = dt; }
-    void setFillMode(FillMode mode) { m_FillMode = mode; }
-
-    static void bindCullMode(Cull cull);
-    static void bindBlendState(Blend blend);
-    static void bindDepthTest(DepthTest dt);
-    static void bindFillMode(FillMode mode);
 
     static float bind(GLuint id);
     virtual void clear() const = 0;

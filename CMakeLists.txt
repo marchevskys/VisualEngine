@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(GameTest2)
+project(VisualEngine)
 
 INCLUDE_DIRECTORIES(include/)
 
-add_definitions(-D_SHADER_PATH="../GameTest2/src/shaders/")
-add_definitions(-D_MODEL_PATH="../GameTest2/models3d/")
+add_definitions(-D_SHADER_PATH="../VisualEngine/src/shaders/")
+add_definitions(-D_MODEL_PATH="../VisualEngine/models3d/")
 
 file(GLOB_RECURSE SHADER_FILES *.frag *.vert *.glsl)
 aux_source_directory(src/ SRC_LIST)

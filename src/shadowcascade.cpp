@@ -116,7 +116,7 @@ void ShadowCascade::prepareCascades(const Camera &camera, const glm::vec3 &light
 void ShadowCascade::drawAll(std::function<void(const glm::mat4 &)> renderFunction) {
     ShaderShadow::get()->use();
 
-    glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_DEPTH_TEST);
     glEnable(GL_DEPTH_CLAMP);
     //glCullFace(GL_BACK);
     glBindFramebuffer(GL_FRAMEBUFFER, mCascadedShadowFBO);
