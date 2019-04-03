@@ -16,6 +16,8 @@
 #include <vector>
 namespace Visual {
 
+	constexpr char DEFAULT_MODEL_PATH[] = _MODEL_PATH;
+
 MeshData processMesh(aiMesh *mesh, const aiScene *scene) {
     // data to fill
     std::vector<unsigned int> indices;
@@ -73,7 +75,7 @@ void processNode(aiNode *node, const aiScene *scene, std::vector<MeshData> &mesh
 
 std::vector<MeshData> Visual::MeshLoader::load(const char *charPath) {
 
-    std::string path(std::string(_MODEL_PATH) + std::string(charPath));
+    std::string path(std::string(DEFAULT_MODEL_PATH) + std::string(charPath));
     Assimp::Importer importer;
     const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
     // check for errors

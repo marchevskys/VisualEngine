@@ -8,6 +8,7 @@
 #else
 #include <cstring>
 #include <iostream>
+#include <string>
 
 #define LOG_INFO_FILE << ", file: " << __FILE__
 #define LOG_INFO_FUNCTION << "    " << __FUNCTION__

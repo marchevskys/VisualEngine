@@ -10,11 +10,14 @@
 #include <string>
 #include <vector>
 namespace Visual {
+
+constexpr char DEFAULT_SHADER_PATH[] = _SHADER_PATH;
+
 std::set<Shader *> Shader::registeredShaders;
 
 std::string codeFromPath(const char *path) {
     std::string code;
-    std::ifstream shaderStream(std::string(_SHADER_PATH) + path, std::ios::in);
+    std::ifstream shaderStream(std::string(DEFAULT_SHADER_PATH) + std::string(path), std::ios::in);
     if (shaderStream.is_open()) {
         std::stringstream sstr;
         sstr << shaderStream.rdbuf();
