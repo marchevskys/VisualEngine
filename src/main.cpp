@@ -46,11 +46,11 @@ int main() {
         //torusTransform = glm::scale(torusTransform, glm::dvec3(0.005));
         //vi::Model torusModel(&scene, torusMesh, torusMaterial, glm::value_ptr(torusTransform));
 
-		auto asteroidMesh = std::make_shared<vi::Mesh>(vi::MeshLoader::load("asteroid1.obj"));
-		auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.5, 0.02, 0.1});
-		glm::dmat4 asteroidTransform = glm::translate(glm::dmat4(1), glm::dvec3(40, 1.3, 10));
-		asteroidTransform = glm::scale(asteroidTransform, glm::dvec3(5.0));
-		vi::Model asteroidModel(&scene, asteroidMesh, asteroidMaterial, glm::value_ptr(asteroidTransform));
+        auto asteroidMesh = std::make_shared<vi::Mesh>(vi::MeshLoader::load("asteroid1.obj"));
+        auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.5, 0.02, 0.1});
+        glm::dmat4 asteroidTransform = glm::translate(glm::dmat4(1), glm::dvec3(40, 1.3, 10));
+        asteroidTransform = glm::scale(asteroidTransform, glm::dvec3(5.0));
+        vi::Model asteroidModel(&scene, asteroidMesh, asteroidMaterial, glm::value_ptr(asteroidTransform));
 
         //auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.8, 0.8, 0.8});
         //glm::dmat4 sphereTransform = glm::translate(glm::dmat4(1), glm::dvec3(0, -1.5, 2.0));

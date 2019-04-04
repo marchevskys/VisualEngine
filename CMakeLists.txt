@@ -46,13 +46,15 @@ add_executable(${PROJECT_NAME} ${SRC_LIST} ${SHADER_FILES})
 SET(SHADERS_DIRECTORY shaders)
 SET(MODELS_DIRECTORY models3d)
 SET(COPY_SOURCE1 "${CMAKE_SOURCE_DIR}/src/${SHADERS_DIRECTORY}")
-SET(COPY_SOURCE2 "${CMAKE_SOURCE_DIR}/src/${MODELS_DIRECTORY}")
+SET(COPY_SOURCE2 "${CMAKE_SOURCE_DIR}/${MODELS_DIRECTORY}")
 
 if (WIN32)
 SET(COPY_DEST "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>")
 elseif(LINUX)
 SET(COPY_DEST "${CMAKE_CURRENT_BINARY_DIR}")
 endif()
+
+message ("current binary dir ${CMAKE_CURRENT_BINARY_DIR}")
 
 if (WIN32)
 # on windows, to copy, we need to replace the pesky forward slashes with back slashes
