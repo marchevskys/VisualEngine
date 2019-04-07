@@ -17,8 +17,8 @@ class Camera {
     template <class Precision = float>
     glm::vec<3, Precision, glm::highp> getDir() const { return m_view[2]; };
 
-    void move(glm::dvec3 offset);
-    void rotate(glm::dvec3 angle);
+    void move(glm::vec3 offset);
+    void rotate(glm::vec3 angle);
 
     void setFOV(float fov);
     void setFOV(double fov) { setFOV(static_cast<float>(fov)); };
@@ -33,9 +33,9 @@ class Camera {
   private:
     float m_near = .1f, m_far = 2000.f, m_fov = 1.f, m_aspectRatio = 1.f;
 
-    glm::dvec3 m_pos, m_aim, m_up;
+    glm::vec3 m_pos, m_aim, m_up;
     glm::mat4 m_projection;
-    glm::dmat4 m_view;
+    glm::mat4 m_view;
 
     void updateView();
     void updateProjection();

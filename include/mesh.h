@@ -1,5 +1,6 @@
 #ifndef MESH_H
 #define MESH_H
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -60,6 +61,7 @@ class MeshPrimitive {
   public:
     static const Mesh &quad();
     static const Mesh &cube();
+    static const std::shared_ptr<Mesh> lodSphere();
 };
 } // namespace Visual
 #endif // MESH_H

@@ -125,4 +125,14 @@ const Mesh &MeshPrimitive::cube() {
     return qu;
 }
 
+const std::shared_ptr<Mesh> MeshPrimitive::lodSphere() {
+    static std::vector<MeshData> sphereData;
+    sphereData.emplace_back(MeshDataPrimitive::sphere(40));
+    sphereData.emplace_back(MeshDataPrimitive::sphere(20));
+    sphereData.emplace_back(MeshDataPrimitive::sphere(10));
+    sphereData.emplace_back(MeshDataPrimitive::sphere(5));
+    sphereData.emplace_back(MeshDataPrimitive::sphere(2));
+    return std::make_shared<Mesh>(sphereData);
+}
+
 } // namespace Visual

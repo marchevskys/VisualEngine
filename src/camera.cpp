@@ -29,13 +29,13 @@ void Camera::setAR(float ar) {
     updateProjection();
 }
 
-void Camera::move(glm::dvec3 offset) {
+void Camera::move(glm::vec3 offset) {
     m_pos += offset;
     m_aim += offset;
     updateView();
 }
 
-void Camera::rotate(glm::dvec3 angle) {
+void Camera::rotate(glm::vec3 angle) {
     auto radiusVec = m_aim - m_pos;
     radiusVec = glm::rotate(radiusVec, glm::length(angle), m_up);
     m_aim = m_pos + radiusVec;
