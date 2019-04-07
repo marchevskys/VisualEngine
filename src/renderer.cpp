@@ -105,8 +105,7 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
                     meshGroup.arg->bind();
                     meshGroup.forEvery([&](const Scene::MaterialGroup &materialGroup) {
                         materialGroup.forEvery([&](const Model *m) {
-                            auto &modelTransform = reinterpret_cast<const glm::dmat4 &>(*m->getTransform());
-                            shadowShader->setModel(modelTransform);
+                            shadowShader->setModel(m->getTransform());
                             m->getMesh()->draw();
                         });
                     });
@@ -123,10 +122,10 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
         GL::setCullMode(GL::Cull::Back);
 
         //    glm::mat4 biasMatrix(0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.5, 0.5, 0.5, 1.0);
-        auto linearSize = [&](const glm::dmat4 &model) {
+        auto linearSize = [&](const glm::mat4 &model) {
             float objectRadius = glm::length(model[0] + model[1] + model[2]);
-            glm::dvec3 pos(model[3]);
-            auto dist = glm::distance(pos, camera.getPos<double>());
+            glm::vec3 pos(model[3]);
+            auto dist = glm::distance(pos, camera.getPos<float>());
             return objectRadius / dist;
         };
 
@@ -135,8 +134,8 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
         scene.m_data->forEvery([&](const Scene::ShaderGroup &shaderGroup) {
             const Shader3d *s = shaderGroup.arg;
             s->use();
-            s->setView(camera.getView());
-            s->setProjection(camera.getProjection());
+            s->setViewMatrix(camera.getView());
+            s->setProjectionMatrix(camera.getProjection());
             s->setViewPos(camera.getPos());
             s->setLightDir(lightDir);
             s->setCascades(m_renderData->cascade.viewProjMatrix, m_renderData->cascade.splitDepth, SHADOW_MAP_CASCADE_COUNT);
@@ -147,10 +146,10 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
                     materialGroup.arg->apply();
                     materialGroup.forEvery([&](const Model *m) {
                         int maxLodLevel = m->getMesh()->getLodCount();
-                        auto &modelTransform = reinterpret_cast<const glm::dmat4 &>(*m->getTransform());
-                        double screenSpaceSize = linearSize(modelTransform);
+
+                        float screenSpaceSize = linearSize(m->getTransform());
                         int lod = int(maxLodLevel - sqrt(screenSpaceSize) * 10.1);
-                        s->setModel(modelTransform);
+                        s->setModelMatrix(m->getTransform());
                         m->getMesh()->draw(glm::clamp(lod, 0, maxLodLevel - 1));
                     });
                 });
@@ -168,16 +167,15 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
         cube.bind();
         auto solidShader = ShaderPlain::get();
         solidShader->use();
-        solidShader->setView(camera.getView());
-        solidShader->setProjection(camera.getProjection());
+        solidShader->setViewMatrix(camera.getView());
+        solidShader->setProjectionMatrix(camera.getProjection());
         scene.forEveryModel([&](const Model *m) {
-            auto &modelTransform = reinterpret_cast<const glm::dmat4 &>(*m->getTransform());
             auto mesh = m->getMesh();
-            glm::dvec3 center(mesh->getOBB().center);
-            glm::dvec3 scale(mesh->getOBB().scale);
-            glm::dmat4 transform = glm::translate(modelTransform, center);
+            glm::vec3 center(mesh->getOBB().center);
+            glm::vec3 scale(mesh->getOBB().scale);
+            glm::mat4 transform = glm::translate(m->getTransform(), center);
             transform = glm::scale(transform, scale);
-            solidShader->setModel(transform);
+            solidShader->setModelMatrix(transform);
             cube.draw();
         });
     }

@@ -4,42 +4,25 @@
 #include "mesh.h"
 #include "scene.h"
 
-#include <glm/glm.hpp>
 #include <vector>
 
 namespace Visual {
 
-Model &Model::operator=(const Model &other) {
-    return assign(other);
+Model::Model(Scene &scene, glm::mat4 &transform, shared_ptr<Mesh> mesh, shared_ptr<IMaterial> material)
+    : m_scene(&scene), m_transform(transform), m_mesh(mesh), m_material(material) {
+
+    m_scene->addModel(this);
 }
 
-Model &Model::assign(const Model &other) {
-    if (this == &other) {
-        return *this;
-    }
-    m_mesh = other.m_mesh;
-    m_material = other.m_material;
-    m_transform = other.m_transform;
-    m_scene = other.m_scene;
-    return *this;
+Model::Model(const Model &old) : m_scene(old.m_scene), m_transform(old.m_transform),
+                                 m_mesh(old.m_mesh), m_material(old.m_material) {
+    m_scene->addModel(this);
 }
 
-Model::Model(Scene *scene, std::shared_ptr<Mesh> mesh, std::shared_ptr<IMaterial> material, double *transform) {
-    m_mesh = mesh;
-    m_material = material;
-    m_transform = transform;
-    scene->addModel(this);
-}
-
-Model::Model(Model &&old) {
-    assign(old);
+Model::Model(Model &&other) : m_scene(other.m_scene), m_transform(other.m_transform),
+                              m_mesh(other.m_mesh), m_material(other.m_material) {
     THROW("NOT READY");
     //m_scene->moveModel(&old, this);
-}
-
-Model::Model(const Model &other) {
-    assign(other);
-    m_scene->addModel(this);
 }
 
 } // namespace Visual

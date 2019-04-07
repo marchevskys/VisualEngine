@@ -22,8 +22,8 @@ Scene::Scene(Scene &&other) {
 void Scene::addModel(Model *m) {
 
     auto shaderIt = m_data->insert<Shader3d>(m->getMaterial()->getShader());
-    auto meshIt = shaderIt->insert<Mesh>(m->getMesh());
-    auto materialIt = meshIt->insert<IMaterial>(m->getMaterial());
+    auto meshIt = shaderIt->insert<Mesh>(m->getMesh().get());
+    auto materialIt = meshIt->insert<IMaterial>(m->getMaterial().get());
     materialIt->vec.push_back(m);
 }
 
@@ -31,10 +31,10 @@ void Scene::removeModel(Model *m) {
     auto shaderIt = m_data->find<Shader3d>(m->getMaterial()->getShader());
     if (shaderIt == m_data->vec.end())
         THROW("Model does not exist");
-    auto meshIt = shaderIt->find<Mesh>(m->getMesh());
+    auto meshIt = shaderIt->find<Mesh>(m->getMesh().get());
     if (meshIt == shaderIt->vec.end())
         THROW("Mesh does not exist");
-    auto materialIt = meshIt->find<IMaterial>(m->getMaterial());
+    auto materialIt = meshIt->find<IMaterial>(m->getMaterial().get());
     if (materialIt == meshIt->vec.end())
         THROW("Material does not exist");
     auto modelIt = std::find(materialIt->vec.begin(), materialIt->vec.end(), m); // Model

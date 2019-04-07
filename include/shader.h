@@ -98,10 +98,10 @@ class Shader3d : public Shader {
     virtual ~Shader3d(){};
 
   public:
-    void setProjection(const glm::mat4 &mat) const { set(projectionId, mat); }
-    void setModel(const glm::mat4 &mat) const { set(modelId, mat); }
+    void setProjectionMatrix(const glm::mat4 &mat) const { set(projectionId, mat); }
+    void setModelMatrix(const glm::mat4 &mat) const { set(modelId, mat); }
 
-    void setView(const glm::mat4 &mat) const { set(viewId, mat); }
+    void setViewMatrix(const glm::mat4 &mat) const { set(viewId, mat); }
     void setViewPos(const glm::vec3 &pos) const { set(viewPosId, pos); }
 
     void setLightDir(const glm::vec3 &vec) const { set(lightDirId, vec); }

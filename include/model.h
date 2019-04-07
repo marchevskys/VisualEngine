@@ -1,7 +1,7 @@
 #ifndef MODEL_H
 #define MODEL_H
+#include <glm/glm.hpp>
 #include <memory>
-
 namespace Visual {
 
 class Mesh;
@@ -14,20 +14,19 @@ class Model {
     friend class Scene;
 
   public:
-    Model(Scene *scene, shared_ptr<Mesh> mesh, shared_ptr<IMaterial> material, double *transform);
+    Model(Scene &scene, glm::mat4 &transform, shared_ptr<Mesh> mesh, shared_ptr<IMaterial> material);
     Model(Model &&other);
     Model(const Model &other);
-    Model &operator=(const Model &other);
+    Model &operator=(const Model &other) = delete;
 
   public:
-    inline const IMaterial *getMaterial() const { return m_material.get(); }
-    inline const Mesh *getMesh() const { return m_mesh.get(); }
-    inline const double *getTransform() const { return m_transform; }
+    shared_ptr<Mesh> getMesh() const { return m_mesh; }
+    shared_ptr<IMaterial> getMaterial() const { return m_material; }
+    glm::mat4 &getTransform() const { return m_transform; }
 
   private:
-    Model &assign(const Model &other);
     Scene *m_scene;
-    double *m_transform;
+    glm::mat4 &m_transform;
     shared_ptr<Mesh> m_mesh;
     shared_ptr<IMaterial> m_material;
 };
