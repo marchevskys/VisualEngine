@@ -82,7 +82,7 @@ class RenderData {
     std::vector<RenderPass> renderPasses;
 };
 
-void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &window) {
+void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &window) const {
     std::lock_guard<std::mutex> lock(RenderLocker); // lock the thread to avoid multi-thread shader handling
 
     static float rotangle = 0.0f;

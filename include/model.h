@@ -14,7 +14,7 @@ class Model {
     friend class Scene;
 
   public:
-    Model(Scene &scene, glm::mat4 &transform, shared_ptr<const Mesh> mesh, shared_ptr<IMaterial> material);
+    Model(Scene &scene, shared_ptr<const Mesh> mesh, shared_ptr<IMaterial> material);
     Model(Model &&other);
     Model(const Model &other);
     Model &operator=(const Model &other) = delete;
@@ -22,11 +22,12 @@ class Model {
   public:
     shared_ptr<const Mesh> getMesh() const { return m_mesh; }
     shared_ptr<IMaterial> getMaterial() const { return m_material; }
-    glm::mat4 &getTransform() const { return m_transform; }
+    const glm::mat4 &getTransform() const { return m_transform; }
+    void setTransform(const glm::mat4 &tr) { m_transform = tr; }
 
   private:
     Scene *m_scene;
-    glm::mat4 &m_transform;
+    glm::mat4 m_transform;
     shared_ptr<const Mesh> m_mesh;
     shared_ptr<IMaterial> m_material;
 };

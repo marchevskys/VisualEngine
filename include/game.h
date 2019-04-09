@@ -7,25 +7,28 @@ namespace Visual {
 class Scene;
 class Camera;
 class Renderer;
+class IFrameBuffer;
 } // namespace Visual
 namespace ex = entityx;
 namespace vi = Visual;
-class GameData;
+
+class PhysWorld;
 
 class Game : public ex::EntityX {
   public:
     Game();
+    void loadLevel();
     ~Game();
 
     void update(double dt);
-    void render(vi::Camera &cam);
+    void render(const vi::Renderer &renderer, vi::IFrameBuffer &frameBuffer);
     void addObject();
 
   private:
-    std::unique_ptr<vi::Scene> m_scene;
+    std::unique_ptr<vi::Scene> m_visualScene;
     std::unique_ptr<vi::Renderer> m_renderer;
     std::unique_ptr<vi::Camera> m_camera;
-    std::unique_ptr<GameData> m_gameData;
+    std::unique_ptr<PhysWorld> m_physWorld;
 };
 
 #endif // GAME_H

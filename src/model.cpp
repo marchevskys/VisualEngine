@@ -8,8 +8,8 @@
 
 namespace Visual {
 
-Model::Model(Scene &scene, glm::mat4 &transform, shared_ptr<const Mesh> mesh, shared_ptr<IMaterial> material)
-    : m_scene(&scene), m_transform(transform), m_mesh(mesh), m_material(material) {
+Model::Model(Scene &scene, shared_ptr<const Mesh> mesh, shared_ptr<IMaterial> material)
+    : m_scene(&scene), m_transform(1), m_mesh(mesh), m_material(material) {
 
     m_scene->addModel(this);
 }

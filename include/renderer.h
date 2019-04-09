@@ -13,7 +13,7 @@ class Renderer {
   public:
     Renderer();
     ~Renderer();
-    void draw(const Scene &scene, Camera &camera, const IFrameBuffer &frameBuffer);
+    void draw(const Scene &scene, Camera &camera, const IFrameBuffer &frameBuffer) const;
 };
 } // namespace Visual
 #endif // RENDERER_H
