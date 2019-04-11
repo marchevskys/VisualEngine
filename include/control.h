@@ -42,8 +42,9 @@ class Control {
     static void reset();
     static void resetMouse();
     static void resetKeyboard();
+    static std::map<Button, int> keymapper;
 
-    Control(){};
+    Control();
 };
 
 #endif // CONTROLLER_H

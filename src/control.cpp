@@ -10,6 +10,24 @@ double Control::scroll = 0.0;
 Coordinates Control::m_currentMousePos{0.0, 0.0};
 static Coordinates m_prevMousePos{0.0, 0.0};
 static Coordinates diff{0, 0};
+std::map<Control::Button, int> Control::keymapper;
+
+Control::Control() {
+    if (keymapper.empty()) {
+        keymapper[Control::Button::Up] = GLFW_KEY_UP;
+        keymapper[Control::Button::Down] = GLFW_KEY_DOWN;
+        keymapper[Control::Button::Left] = GLFW_KEY_LEFT;
+        keymapper[Control::Button::Right] = GLFW_KEY_RIGHT;
+        keymapper[Control::Button::Space] = GLFW_KEY_SPACE;
+        keymapper[Control::Button::Enter] = GLFW_KEY_ENTER;
+        keymapper[Control::Button::W] = GLFW_KEY_W;
+        keymapper[Control::Button::A] = GLFW_KEY_A;
+        keymapper[Control::Button::S] = GLFW_KEY_S;
+        keymapper[Control::Button::D] = GLFW_KEY_D;
+        keymapper[Control::Button::E] = GLFW_KEY_E;
+        keymapper[Control::Button::Q] = GLFW_KEY_Q;
+    }
+}
 
 void Control::key_callback(GLFWwindow *window, int key, int scancode, int action, int mode) {
     if (key > 10 && key < 300) {
@@ -40,46 +58,7 @@ Coordinates Control::mousePos() {
 }
 
 bool Control::pressed(Control::Button button) {
-    switch (button) {
-    case Control::Button::Up: {
-        return keys[GLFW_KEY_UP];
-    } break;
-    case Control::Button::Down: {
-        return keys[GLFW_KEY_DOWN];
-    } break;
-    case Control::Button::Left: {
-        return keys[GLFW_KEY_LEFT];
-    } break;
-    case Control::Button::Right: {
-        return keys[GLFW_KEY_RIGHT];
-    } break;
-    case Control::Button::Space: {
-        return keys[GLFW_KEY_SPACE];
-    } break;
-    case Control::Button::Enter: {
-        return keys[GLFW_KEY_ENTER];
-    } break;
-    case Control::Button::W: {
-        return keys[GLFW_KEY_W];
-    } break;
-    case Control::Button::A: {
-        return keys[GLFW_KEY_A];
-    } break;
-    case Control::Button::S: {
-        return keys[GLFW_KEY_S];
-    } break;
-    case Control::Button::D: {
-        return keys[GLFW_KEY_D];
-    } break;
-    case Control::Button::E: {
-        return keys[GLFW_KEY_E];
-    } break;
-    case Control::Button::Q: {
-        return keys[GLFW_KEY_Q];
-    } break;
-    default:
-        return false;
-    }
+    return keys[keymapper[button]];
 }
 
 void Control::resetMouse() {

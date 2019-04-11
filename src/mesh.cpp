@@ -120,9 +120,9 @@ const Mesh &MeshPrimitive::quad() {
     return qu;
 }
 
-const Mesh &MeshPrimitive::cube() {
-    static Mesh qu(MeshDataPrimitive::cube());
-    return qu;
+const std::shared_ptr<Mesh> MeshPrimitive::cube() {
+
+    return std::make_shared<Mesh>(MeshDataPrimitive::cube());
 }
 
 const std::shared_ptr<Mesh> MeshPrimitive::lodSphere() {

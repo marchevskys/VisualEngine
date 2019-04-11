@@ -86,8 +86,7 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
     std::lock_guard<std::mutex> lock(RenderLocker); // lock the thread to avoid multi-thread shader handling
 
     static float rotangle = 0.0f;
-    glm::vec3 initDir(glm::normalize(glm::vec3(0, 0, 1)));
-    glm::vec3 lightDir(glm::rotate(initDir, (rotangle += 0.008f), glm::vec3(1, 0, 1)));
+    glm::vec3 lightDir(glm::normalize(glm::vec3(1, 1, 1)));
 
     // shadowPass
     {
@@ -164,7 +163,7 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
         GL::setCullMode(GL::Cull::None);
 
         auto &cube = MeshPrimitive::cube();
-        cube.bind();
+        cube->bind();
         auto solidShader = ShaderPlain::get();
         solidShader->use();
         solidShader->setViewMatrix(camera.getView());
@@ -176,7 +175,7 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
             glm::mat4 transform = glm::translate(m->getTransform(), center);
             transform = glm::scale(transform, scale);
             solidShader->setModelMatrix(transform);
-            cube.draw();
+            cube->draw();
         });
     }
 

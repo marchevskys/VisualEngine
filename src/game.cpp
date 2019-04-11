@@ -26,29 +26,55 @@ struct RenderSystem : public ex::System<RenderSystem> {
     }
 };
 
+struct ControlSystem : public ex::System<ControlSystem> {
+    void update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt) override {
+
+        es.each<Control, PhysBody>([dt](ex::Entity entity, Control &control, PhysBody &body) {
+            glm::dvec3 forceDir(0, 0, 0);
+            if (Control::pressed(Control::Button::Up))
+                forceDir += glm::dvec3(0, -1, 0);
+            if (Control::pressed(Control::Button::Down))
+                forceDir += glm::dvec3(0, 1, 0);
+            if (Control::pressed(Control::Button::Left))
+                forceDir += glm::dvec3(1, 0, 0);
+            if (Control::pressed(Control::Button::Right))
+                forceDir += glm::dvec3(-1, 0, 0);
+            auto forceDirLength = glm::length(forceDir);
+            if (forceDirLength > 1.0)
+                forceDir /= forceDirLength;
+            forceDir *= 50.0;
+
+            body.addForce(forceDir);
+        });
+    }
+};
+
 Game::Game() {
     m_visualScene = std::make_unique<vi::Scene>();
-    m_camera = std::make_unique<vi::Camera>(glm::vec3(10, 10, 0), glm::vec3(0, 0, 0));
+    m_camera = std::make_unique<vi::Camera>(glm::vec3(0, 10, 4), glm::vec3(0, 0, 0));
     m_physWorld = std::make_unique<PhysWorld>();
 
     systems.add<RenderSystem>();
+    systems.add<ControlSystem>();
     systems.configure();
 }
 
 void Game::loadLevel() {
 
-    auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.8, 0.8, 0.8});
+    auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{1.8, 0.8, 0.8});
     auto planeMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.1, 0.1, 0.1});
-    auto planeMesh = std::make_shared<vi::Mesh>(vi::MeshDataPrimitive::plane(3000.0f));
 
     ex::Entity sphereEntity = entities.create();
     sphereEntity.assign<vi::Model>(*m_visualScene.get(), vi::MeshPrimitive::lodSphere(), sphereMaterial);
-    sphereEntity.assign<PhysBody>(*m_physWorld.get(), CollisionSphere(*m_physWorld.get(), 1.0), 1.0, vec3d(0.6, 0.6, 0.6));
+    sphereEntity.assign<PhysBody>(*m_physWorld.get(), CollisionSphere(*m_physWorld.get(), 1.0), 1.0, vec3d(0.3, 0.3, 0.3));
+    sphereEntity.assign<Control>();
     sphereEntity.component<PhysBody>()->setPos({0.0, 0.0, 10.0});
 
     ex::Entity planeEntity = entities.create();
-    planeEntity.assign<vi::Model>(*m_visualScene.get(), planeMesh, planeMaterial);
-    planeEntity.assign<PhysBody>(*m_physWorld.get(), CollisionCuboid(*m_physWorld.get(), {100000, 100000, 1.0}), 0.0, vec3d(0.0, 0.0, 0.0));
+    glm::dvec3 cubeScale(10000.0, 10000.0, 1.0);
+    auto cubemesh = std::make_shared<vi::Mesh>(vi::MeshDataPrimitive::cube(cubeScale * 0.5));
+    planeEntity.assign<vi::Model>(*m_visualScene.get(), cubemesh, planeMaterial);
+    planeEntity.assign<PhysBody>(*m_physWorld.get(), CollisionCuboid(*m_physWorld.get(), cubeScale), 0.0, vec3d(0.0, 0.0, -1.0));
 }
 
 Game::~Game() {
@@ -59,6 +85,7 @@ Game::~Game() {
 }
 
 void Game::update(double dt) {
+    systems.update<ControlSystem>(dt);
     m_physWorld->update(dt);
 }
 

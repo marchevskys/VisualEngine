@@ -73,6 +73,11 @@ void main(){
     vec3 skyDir = vec3(0, 0, 1);
 
     vec3 finalColor = diffuseColor;
+    if(diffuseColor.r > 1.0)
+    {
+        finalColor = mix(vec3(0.0, 0.3, 0.7), vec3(0.4), vec3((fract(vs.tc.x * 2) > 0.5) ^^ ((vs.tc.y) > 0.5)));
+    }
+
 
     float zPosition = vs.cp.z;
     int cascadeIndex = 0;

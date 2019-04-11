@@ -60,7 +60,7 @@ class Mesh {
 class MeshPrimitive {
   public:
     static const Mesh &quad();
-    static const Mesh &cube();
+    static const std::shared_ptr<Mesh> cube();
     static const std::shared_ptr<Mesh> lodSphere();
 };
 } // namespace Visual
