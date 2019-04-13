@@ -27,7 +27,7 @@ class Game : public ex::EntityX {
   private:
     std::unique_ptr<vi::Scene> m_visualScene;
     std::unique_ptr<vi::Renderer> m_renderer;
-    std::unique_ptr<vi::Camera> m_camera;
+    std::shared_ptr<vi::Camera> m_camera;
     std::unique_ptr<PhysWorld> m_physWorld;
 };
 

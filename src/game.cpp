@@ -27,6 +27,8 @@ struct RenderSystem : public ex::System<RenderSystem> {
 };
 
 struct ControlSystem : public ex::System<ControlSystem> {
+   std::shared_ptr<vi::Camera> m_Camera;
+   ControlSystem(std::shared_ptr<vi::Camera> camera) : m_Camera(camera) {}
     void update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt) override {
         auto attract = [&es](ex::Entity e1, glm::dvec3 &forceDir, double k) {
             auto comp1 = e1.component<PhysBody>();
@@ -45,7 +47,7 @@ struct ControlSystem : public ex::System<ControlSystem> {
             });
         };
 
-        es.each<Control, PhysBody>([dt, attract](ex::Entity entity, Control &control, PhysBody &body) {
+        es.each<Control, PhysBody>([dt, attract, this](ex::Entity entity, Control &control, PhysBody &body) {
             glm::dvec3 forceDir(0, 0, 0);
             if (Control::pressed(Control::Button::Up))
                 forceDir += glm::dvec3(0, 0, 1);
@@ -67,17 +69,18 @@ struct ControlSystem : public ex::System<ControlSystem> {
             forceDir *= 10.0;
 
             body.addForce(forceDir);
+            m_Camera->set(glm::vec3(0, 10, 4), body.getPos(), {0.0, 0.0, 1.0});
         });
     }
 };
 
 Game::Game() {
     m_visualScene = std::make_unique<vi::Scene>();
-    m_camera = std::make_unique<vi::Camera>(glm::vec3(0, 10, 4), glm::vec3(0, 0, 0));
+    m_camera = std::make_shared<vi::Camera>(glm::vec3(0, 10, 4), glm::vec3(0, 0, 0));
     m_physWorld = std::make_unique<PhysWorld>();
 
     systems.add<RenderSystem>();
-    systems.add<ControlSystem>();
+    systems.add<ControlSystem>(m_camera);
     systems.configure();
 }
 
