@@ -31,6 +31,7 @@ struct RenderSystem : public ex::System<RenderSystem> {
 struct ControlSystem : public ex::System<ControlSystem> {
     std::shared_ptr<vi::Camera> m_Camera;
     ControlSystem(std::shared_ptr<vi::Camera> camera) : m_Camera(camera) {}
+
     void update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt) override {
         auto attract = [&es](ex::Entity e1, glm::dvec3 &forceDir, double k) {
             auto comp1 = e1.component<PhysBody>();
@@ -50,36 +51,39 @@ struct ControlSystem : public ex::System<ControlSystem> {
         };
 
         es.each<Control, PhysBody>([dt, attract, this](ex::Entity entity, Control &control, PhysBody &body) {
+            glm::vec3 pos = body.getPos();
+            glm::vec3 dir = glm::normalize(pos - m_Camera->getPos());
             glm::dvec3 forceDir(0, 0, 0);
             if (Control::pressed(Control::Button::Up))
-                forceDir += glm::dvec3(0, 0, 1);
-            if (Control::pressed(Control::Button::Down))
-                forceDir += glm::dvec3(0, 0, -1);
-            if (Control::pressed(Control::Button::Left))
-                forceDir += glm::dvec3(1, 0, 0);
-            if (Control::pressed(Control::Button::Right))
-                forceDir += glm::dvec3(-1, 0, 0);
-            if (Control::pressed(Control::Button::A))
-                forceDir += glm::dvec3(0, -1, 0);
-            if (Control::pressed(Control::Button::Z))
                 forceDir += glm::dvec3(0, 1, 0);
+            if (Control::pressed(Control::Button::Down))
+                forceDir += glm::dvec3(0, -1, 0);
+            if (Control::pressed(Control::Button::Left))
+                forceDir += glm::dvec3(-1, 0, 0);
+            if (Control::pressed(Control::Button::Right))
+                forceDir += glm::dvec3(1, 0, 0);
+            if (Control::pressed(Control::Button::A))
+                forceDir += glm::dvec3(0, 0, -1);
+            if (Control::pressed(Control::Button::Z))
+                forceDir += glm::dvec3(0, 0, 1);
             if (Control::pressed(Control::Button::Space))
                 attract(entity, forceDir, 1000.0);
             auto forceDirLength = glm::length(forceDir);
             if (forceDirLength > 1.0)
                 forceDir /= forceDirLength;
             forceDir *= 10.0;
+
+            forceDir = glm::dmat3(glm::inverse(m_Camera->getView<double>())) * forceDir;
             body.addForce(forceDir);
 
             float radius = 6.0f;
-            glm::vec3 pos = body.getPos();
-            glm::vec3 dir = glm::normalize(pos - m_Camera->getPos());
+
             m_Camera->set(pos - dir * radius, pos, glm::vec3(0, 0, 1));
         });
         if (Control::pressed(Control::Button::F1))
-           Config::get()->set_option_enabled(Config::Option::ImGuiEnabled, true);
+            Config::get()->set_option_enabled(Config::Option::ImGuiEnabled, true);
         if (Control::pressed(Control::Button::F2))
-           Config::get()->set_option_enabled(Config::Option::ImGuiEnabled, false);
+            Config::get()->set_option_enabled(Config::Option::ImGuiEnabled, false);
     }
 };
 
