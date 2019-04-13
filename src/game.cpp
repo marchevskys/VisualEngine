@@ -29,8 +29,8 @@ struct RenderSystem : public ex::System<RenderSystem> {
 };
 
 struct ControlSystem : public ex::System<ControlSystem> {
-   std::shared_ptr<vi::Camera> m_Camera;
-   ControlSystem(std::shared_ptr<vi::Camera> camera) : m_Camera(camera) {}
+    std::shared_ptr<vi::Camera> m_Camera;
+    ControlSystem(std::shared_ptr<vi::Camera> camera) : m_Camera(camera) {}
     void update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt) override {
         auto attract = [&es](ex::Entity e1, glm::dvec3 &forceDir, double k) {
             auto comp1 = e1.component<PhysBody>();
@@ -69,9 +69,12 @@ struct ControlSystem : public ex::System<ControlSystem> {
             if (forceDirLength > 1.0)
                 forceDir /= forceDirLength;
             forceDir *= 10.0;
-
             body.addForce(forceDir);
-            m_Camera->set(glm::vec3(0, 10, 4), body.getPos(), {0.0, 0.0, 1.0});
+
+            float radius = 6.0f;
+            glm::vec3 pos = body.getPos();
+            glm::vec3 dir = glm::normalize(pos - m_Camera->getPos());
+            m_Camera->set(pos - dir * radius, pos, glm::vec3(0, 0, 1));
         });
         if (Control::pressed(Control::Button::F1))
            Config::get()->set_option_enabled(Config::Option::ImGuiEnabled, true);
@@ -82,7 +85,8 @@ struct ControlSystem : public ex::System<ControlSystem> {
 
 Game::Game() {
     m_visualScene = std::make_unique<vi::Scene>();
-    m_camera = std::make_shared<vi::Camera>(glm::vec3(0, 10, 4), glm::vec3(0, 0, 0));
+    m_camera = std::make_shared<vi::Camera>(glm::vec3(0, 1, 0), glm::vec3(0, 0, 0));
+    m_camera->setFOV(1.4f);
     m_physWorld = std::make_unique<PhysWorld>();
 
     systems.add<RenderSystem>();
@@ -106,7 +110,7 @@ void Game::loadLevel() {
         ex::Entity asteroidEntity = entities.create();
         asteroidEntity.assign<vi::Model>(*m_visualScene.get(), vi::MeshPrimitive::lodSphere(), asteroidMaterial);
         asteroidEntity.assign<PhysBody>(*m_physWorld.get(), CollisionSphere(*m_physWorld.get(), 1.0), 1.0, vec3d(0.3, 0.3, 0.3));
-        asteroidEntity.component<PhysBody>()->setPos(glm::sphericalRand(10.0));
+        asteroidEntity.component<PhysBody>()->setPos(glm::ballRand(25.0));
     }
 
     //    ex::Entity planeEntity = entities.create();

@@ -166,15 +166,15 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
     // ImGui
     if (m_imGuiEnabled)
     {
-       ImGui_ImplOpenGL3_NewFrame();
-       ImGui_ImplGlfw_NewFrame();
-       ImGui::NewFrame();
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
 
-       MineImGuiWindow();
+        MineImGuiWindow();
 
-       ImGui::Render();
+        ImGui::Render();
 
-       ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
     //return;
@@ -221,11 +221,10 @@ Renderer::~Renderer() {
 }
 
 // Simple imgui window
-void MineImGuiWindow()
-{
-   ImGui::Begin("config");
-   ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-   ImGui::End();
+void MineImGuiWindow() {
+    ImGui::Begin("config");
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    ImGui::End();
 }
 
 } // namespace Visual
