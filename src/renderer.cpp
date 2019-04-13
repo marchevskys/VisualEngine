@@ -26,6 +26,8 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
+#include "Config.h"
+
 static std::mutex RenderLocker;
 
 namespace Visual {
@@ -162,6 +164,7 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
         });
     }
     // ImGui
+    if (m_imGuiEnabled)
     {
        ImGui_ImplOpenGL3_NewFrame();
        ImGui_ImplGlfw_NewFrame();
@@ -174,7 +177,7 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
-    return;
+    //return;
     // BBox pass
     {
         GL::setDepthTest(GL::DepthTest::Enabled);
@@ -209,9 +212,12 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
 
 Renderer::Renderer() {
     m_renderData.reset(new RenderData);
+    m_imGuiEnabled = Config::get()->is_option_enabled(Config::Option::ImGuiEnabled);
+    Config::get()->add_listener(Config::Option::ImGuiEnabled, [this](bool imgui_enabled) {m_imGuiEnabled = imgui_enabled;});
 }
 
 Renderer::~Renderer() {
+   Config::get()->remove_listener(Config::Option::ImGuiEnabled);
 }
 
 // Simple imgui window

@@ -27,6 +27,8 @@ Control::Control() {
         keymapper[Control::Button::D] = GLFW_KEY_D;
         keymapper[Control::Button::E] = GLFW_KEY_E;
         keymapper[Control::Button::Q] = GLFW_KEY_Q;
+        keymapper[Control::Button::F1] = GLFW_KEY_F1;
+        keymapper[Control::Button::F2] = GLFW_KEY_F2;
     }
 }
 

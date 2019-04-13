@@ -9,7 +9,7 @@ class IFrameBuffer;
 
 class Renderer {
     std::unique_ptr<class RenderData> m_renderData;
-
+    bool m_imGuiEnabled;
   public:
     Renderer();
     ~Renderer();

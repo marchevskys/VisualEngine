@@ -18,6 +18,8 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/string_cast.hpp>
 
+#include "Config.h"
+
 struct RenderSystem : public ex::System<RenderSystem> {
     void update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt) override {
         es.each<PhysBody, vi::Model>([dt](ex::Entity entity, PhysBody &body, vi::Model &model) {
@@ -71,6 +73,10 @@ struct ControlSystem : public ex::System<ControlSystem> {
             body.addForce(forceDir);
             m_Camera->set(glm::vec3(0, 10, 4), body.getPos(), {0.0, 0.0, 1.0});
         });
+        if (Control::pressed(Control::Button::F1))
+           Config::get()->set_option_enabled(Config::Option::ImGuiEnabled, true);
+        if (Control::pressed(Control::Button::F2))
+           Config::get()->set_option_enabled(Config::Option::ImGuiEnabled, false);
     }
 };
 
