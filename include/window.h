@@ -3,7 +3,7 @@
 #include "framebuffer.h"
 
 #include <vector>
-class GLFWwindow;
+struct GLFWwindow;
 class Window : public Visual::IFrameBuffer {
     friend void processInput(GLFWwindow *window);
     friend void framebuffer_size_callback(GLFWwindow *window, int width, int height);

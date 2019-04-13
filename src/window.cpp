@@ -6,6 +6,10 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "imgui.h"
+#include "imgui_impl_opengl3.h"
+#include "imgui_impl_glfw.h"
+
 #include <functional>
 #include <iostream>
 
@@ -37,6 +41,38 @@ class WindowManager {
         static WindowManager winManager;
         return &winManager;
     }
+};
+
+// Covers ImGui loading / unloading. 
+class ImGuiHelper {
+private:
+   ImGuiHelper(GLFWwindow* window) {
+      IMGUI_CHECKVERSION();
+      ImGui::CreateContext();
+      ImGuiIO& io = ImGui::GetIO(); (void)io;
+      //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+      //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
+
+      // Setup Dear ImGui style
+      ImGui::StyleColorsDark();
+      //ImGui::StyleColorsClassic();
+
+      // Setup Platform/Renderer bindings
+      ImGui_ImplGlfw_InitForOpenGL(window, true);
+      ImGui_ImplGlfw_Shutdown();
+      ImGui_ImplOpenGL3_Init(nullptr);	// using default OpenGL version, 130
+      DLOG("ImGui initialized");
+   }
+
+   ~ImGuiHelper() {
+      ImGui_ImplOpenGL3_Shutdown();
+      ImGui_ImplGlfw_Shutdown();
+      ImGui::DestroyContext();
+   }
+public:
+   static void InitImGui(GLFWwindow* window) {
+      static ImGuiHelper helper(window);
+   }
 };
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode) {
@@ -133,6 +169,7 @@ Window::Window(int width, int height, const char *_name, bool _fullScreen) : m_f
     }
     glfwSwapInterval(1);
     glfwSetKeyCallback(m_window, key_callback);
+    ImGuiHelper::InitImGui(m_window);
     glfwSetCursorPosCallback(m_window, Control::mouse_callback); // mouse func
     glfwSetScrollCallback(m_window, Control::scroll_callback);   // scroll func
     DLOG("Window created");

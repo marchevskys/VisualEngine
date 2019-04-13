@@ -22,9 +22,15 @@
 #include <iostream>
 #include <mutex>
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 static std::mutex RenderLocker;
 
 namespace Visual {
+
+void MineImGuiWindow();
 
 class RenderPass {
   public:
@@ -155,6 +161,19 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
             });
         });
     }
+    // ImGui
+    {
+       ImGui_ImplOpenGL3_NewFrame();
+       ImGui_ImplGlfw_NewFrame();
+       ImGui::NewFrame();
+
+       MineImGuiWindow();
+
+       ImGui::Render();
+
+       ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
+
     return;
     // BBox pass
     {
@@ -193,6 +212,13 @@ Renderer::Renderer() {
 }
 
 Renderer::~Renderer() {
+}
+
+// Simple imgui window
+void MineImGuiWindow()
+{
+   ImGui::Begin("config");
+   ImGui::End();
 }
 
 } // namespace Visual

@@ -3,6 +3,9 @@
 
 #include <algorithm>
 #include <glm/glm.hpp>
+#if defined _MSC_VER
+#define _USE_MATH_DEFINES
+#endif
 #include <math.h>
 namespace Visual {
 

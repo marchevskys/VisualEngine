@@ -4,7 +4,7 @@
 #include <map>
 
 using KeyCode = int;
-class GLFWwindow;
+struct GLFWwindow;
 
 struct Coordinates {
     double x = 0, y = 0;

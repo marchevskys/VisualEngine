@@ -262,7 +262,7 @@ void PhysBody::setCorkscrewJoint(const PhysBody &body, vec3d pos, vec3d dir) {
 }
 
 void PhysBody::setHingeJoint(const PhysBody &body, vec3d pos, vec3d dir) {
-    NewtonConstraintCreateHinge(NewtonBodyGetWorld(m_body), value_ptr(pos), value_ptr(dir), body.m_body, m_body);
+    //NewtonConstraintCreateHinge(NewtonBodyGetWorld(m_body), value_ptr(pos), value_ptr(dir), body.m_body, m_body);
 }
 
 void PhysBody::setUniversalJoint(const PhysBody &body, vec3d pivot, vec3d pin0, vec3d pin1) {

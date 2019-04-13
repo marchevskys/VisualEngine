@@ -75,3 +75,7 @@ build/
 
 !models3d/*.obj
 *.txt.user
+/build64
+/.vs
+/build64_2
+/.vscode

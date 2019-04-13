@@ -75,7 +75,6 @@ Game::Game() {
     m_visualScene = std::make_unique<vi::Scene>();
     m_camera = std::make_unique<vi::Camera>(glm::vec3(0, 10, 4), glm::vec3(0, 0, 0));
     m_physWorld = std::make_unique<PhysWorld>();
-    //m_physWorld->setGravity({0.0, 0.0, -9.81});
 
     systems.add<RenderSystem>();
     systems.add<ControlSystem>();
