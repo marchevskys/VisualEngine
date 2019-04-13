@@ -42,7 +42,7 @@ struct ControlSystem : public ex::System<ControlSystem> {
             auto forceDirLength = glm::length(forceDir);
             if (forceDirLength > 1.0)
                 forceDir /= forceDirLength;
-            forceDir *= 50.0;
+            forceDir *= 10.0;
 
             body.addForce(forceDir);
         });
@@ -72,9 +72,9 @@ void Game::loadLevel() {
 
     ex::Entity planeEntity = entities.create();
     glm::dvec3 cubeScale(10000.0, 10000.0, 1.0);
-    auto cubemesh = std::make_shared<vi::Mesh>(vi::MeshDataPrimitive::cube(cubeScale * 0.5));
+    auto cubemesh = std::make_shared<vi::Mesh>(vi::MeshDataPrimitive::cube(cubeScale));
     planeEntity.assign<vi::Model>(*m_visualScene.get(), cubemesh, planeMaterial);
-    planeEntity.assign<PhysBody>(*m_physWorld.get(), CollisionCuboid(*m_physWorld.get(), cubeScale), 0.0, vec3d(0.0, 0.0, -1.0));
+    planeEntity.assign<PhysBody>(*m_physWorld.get(), CollisionCuboid(*m_physWorld.get(), cubeScale * 2.0), 0.0, vec3d(0.0, 0.0, -1.0));
 }
 
 Game::~Game() {

@@ -46,6 +46,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     static bool sIsUp = true;
     if (key == GLFW_KEY_F && action == GLFW_PRESS && sIsUp) {
         Window::currentWindow->toggleFullscreen();
+        //glViewport(0, 0, Window::primaryScreenWidth, Window::primaryScreenHeight);
         sIsUp = false;
     }
 
@@ -101,8 +102,8 @@ void Window::toggleFullscreen() {
 Window::Window(int width, int height, const char *_name, bool _fullScreen) : m_fullScreen(_fullScreen) {
     WindowManager::getInstance(); // initialize GLFW
     glfwWindowHint(GLFW_SAMPLES, 1);
-    m_width = width;
-    m_height = height;
+    m_windowWidth = m_width = width;
+    m_windowHeight = m_height = height;
 
     m_xPos = (primaryScreenWidth - width) / 2;
     m_yPos = (primaryScreenHeight - height) / 2;
@@ -143,6 +144,16 @@ void Window::refresh() {
 
     glfwSetCursorPosCallback(m_window, Control::mouse_callback); // mouse func
     glfwSetScrollCallback(m_window, Control::scroll_callback);   // scroll func
+}
+
+float Window::bind() const {
+    if (m_fullScreen) {
+        return IFrameBuffer::bind(0, 0, primaryScreenWidth, primaryScreenHeight);
+        glfwSwapInterval(1);
+    }
+
+    return IFrameBuffer::bind(0, 0, m_width, m_height);
+    glfwSwapInterval(1);
 }
 
 void Window::setTitle(const char *title) {

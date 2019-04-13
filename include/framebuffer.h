@@ -7,10 +7,10 @@ typedef unsigned int GLuint;
 class ITexture;
 class IFrameBuffer {
   public:
-    float bind() const;
+    virtual float bind() const;
     float bind(int leftTopX, int leftTopY, int rightBottomX, int rightBottomY) const;
-
     static float bind(GLuint id);
+
     virtual void clear() const = 0;
     virtual ~IFrameBuffer() = 0;
 
