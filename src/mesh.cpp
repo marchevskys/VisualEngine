@@ -83,6 +83,16 @@ Mesh::Mesh(const std::vector<MeshData> &meshDatas) {
     pushMeshOnGPU(m_VAO, m_VBO, m_EBO, vertexArray, indexArray);
 }
 
+Mesh::Mesh(const std::initializer_list<MeshData> &meshDatas) {
+    std::vector<GLfloat> vertexArray;
+    std::vector<GLuint> indexArray;
+    size_t indexOffset = 0, vertexOffset = 0;
+    for (const auto &data : meshDatas)
+        fillArrays(data, vertexArray, indexArray, m_lodIndices, indexOffset, vertexOffset, m_obb);
+    m_obb.process();
+    pushMeshOnGPU(m_VAO, m_VBO, m_EBO, vertexArray, indexArray);
+}
+
 void Mesh::bind() const {
     glBindVertexArray(m_VAO);
 }
@@ -126,13 +136,11 @@ const std::shared_ptr<Mesh> MeshPrimitive::cube() {
 }
 
 const std::shared_ptr<Mesh> MeshPrimitive::lodSphere() {
-    static std::vector<MeshData> sphereData;
-    sphereData.emplace_back(MeshDataPrimitive::sphere(40));
-    sphereData.emplace_back(MeshDataPrimitive::sphere(20));
-    sphereData.emplace_back(MeshDataPrimitive::sphere(10));
-    sphereData.emplace_back(MeshDataPrimitive::sphere(5));
-    sphereData.emplace_back(MeshDataPrimitive::sphere(2));
-    return std::make_shared<Mesh>(sphereData);
+    return std::shared_ptr<Mesh>(new Mesh{MeshDataPrimitive::sphere(40),
+                                          MeshDataPrimitive::sphere(20),
+                                          MeshDataPrimitive::sphere(10),
+                                          MeshDataPrimitive::sphere(5),
+                                          MeshDataPrimitive::sphere(2)});
 }
 
 } // namespace Visual

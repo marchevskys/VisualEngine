@@ -59,6 +59,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     Window::currentWindow->resize(width, height);
     glViewport(0, 0, width, height);
+    glfwSwapInterval(1);
 }
 
 void Window::resize(int width, int height) {
@@ -101,7 +102,7 @@ void Window::toggleFullscreen() {
 
 Window::Window(int width, int height, const char *_name, bool _fullScreen) : m_fullScreen(_fullScreen) {
     WindowManager::getInstance(); // initialize GLFW
-    glfwWindowHint(GLFW_SAMPLES, 1);
+    glfwWindowHint(GLFW_SAMPLES, 16);
     m_windowWidth = m_width = width;
     m_windowHeight = m_height = height;
 
@@ -132,28 +133,24 @@ Window::Window(int width, int height, const char *_name, bool _fullScreen) : m_f
     }
     glfwSwapInterval(1);
     glfwSetKeyCallback(m_window, key_callback);
+    glfwSetCursorPosCallback(m_window, Control::mouse_callback); // mouse func
+    glfwSetScrollCallback(m_window, Control::scroll_callback);   // scroll func
     DLOG("Window created");
 }
 
 void Window::refresh() {
     currentWindow = this;
-    Control::resetMouse();
-    glfwMakeContextCurrent(m_window);
     glfwSwapBuffers(m_window);
     glfwPollEvents();
 
-    glfwSetCursorPosCallback(m_window, Control::mouse_callback); // mouse func
-    glfwSetScrollCallback(m_window, Control::scroll_callback);   // scroll func
+    Control::resetMouse();
 }
 
 float Window::bind() const {
-    if (m_fullScreen) {
-        return IFrameBuffer::bind(0, 0, primaryScreenWidth, primaryScreenHeight);
-        glfwSwapInterval(1);
+    if (!m_fullScreen) {
+        return IFrameBuffer::bind(0, 0, m_width, m_height);
     }
-
-    return IFrameBuffer::bind(0, 0, m_width, m_height);
-    glfwSwapInterval(1);
+    return IFrameBuffer::bind(0, 0, primaryScreenWidth, primaryScreenHeight);
 }
 
 void Window::setTitle(const char *title) {
@@ -177,8 +174,8 @@ bool Window::active() {
 
 void Window::clear() const {
     //bind();
-    //glClearColor(0.10f, 0.1f, 0.13f, 1.0f);
-    glClearColor(0.8f, 0.8f, 0.99f, 1.0f);
+    glClearColor(0.10f, 0.1f, 0.13f, 1.0f);
+    //glClearColor(0.8f, 0.8f, 0.99f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 

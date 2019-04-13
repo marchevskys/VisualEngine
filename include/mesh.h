@@ -1,5 +1,6 @@
 #ifndef MESH_H
 #define MESH_H
+#include <initializer_list>
 #include <memory>
 #include <set>
 #include <vector>
@@ -38,6 +39,7 @@ class Mesh {
     Mesh(Mesh &&rhc);
     Mesh(const MeshData &data);
     Mesh(const std::vector<MeshData> &data);
+    Mesh(const std::initializer_list<MeshData> &data);
 
     Mesh(const Mesh &rhc) = delete;
     Mesh &operator=(const Mesh &rhc) = delete;

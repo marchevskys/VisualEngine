@@ -7,7 +7,6 @@
 
 #include <array>
 #include <vector>
-#include "mymath.h"
 
 typedef unsigned int uint;
 

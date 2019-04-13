@@ -22,6 +22,7 @@ Control::Control() {
         keymapper[Control::Button::Enter] = GLFW_KEY_ENTER;
         keymapper[Control::Button::W] = GLFW_KEY_W;
         keymapper[Control::Button::A] = GLFW_KEY_A;
+        keymapper[Control::Button::Z] = GLFW_KEY_Z;
         keymapper[Control::Button::S] = GLFW_KEY_S;
         keymapper[Control::Button::D] = GLFW_KEY_D;
         keymapper[Control::Button::E] = GLFW_KEY_E;

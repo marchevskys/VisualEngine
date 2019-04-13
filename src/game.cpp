@@ -28,17 +28,39 @@ struct RenderSystem : public ex::System<RenderSystem> {
 
 struct ControlSystem : public ex::System<ControlSystem> {
     void update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt) override {
+        auto attract = [&es](ex::Entity e1, glm::dvec3 &forceDir, double k) {
+            auto comp1 = e1.component<PhysBody>();
+            glm::dvec3 pos1 = comp1.get()->getPos();
 
-        es.each<Control, PhysBody>([dt](ex::Entity entity, Control &control, PhysBody &body) {
+            es.each<PhysBody>([&](ex::Entity e2, PhysBody &body) {
+                auto comp2 = e2.component<PhysBody>();
+                if (comp1 != comp2) {
+                    glm::dvec3 pos2 = comp2.get()->getPos();
+                    auto dist = glm::length(pos1 - pos2);
+                    glm::dvec3 force = k * (pos1 - pos2) / (dist * dist * dist);
+
+                    comp2.get()->addForce(force);
+                    comp1.get()->addForce(-force);
+                }
+            });
+        };
+
+        es.each<Control, PhysBody>([dt, attract](ex::Entity entity, Control &control, PhysBody &body) {
             glm::dvec3 forceDir(0, 0, 0);
             if (Control::pressed(Control::Button::Up))
-                forceDir += glm::dvec3(0, -1, 0);
+                forceDir += glm::dvec3(0, 0, 1);
             if (Control::pressed(Control::Button::Down))
-                forceDir += glm::dvec3(0, 1, 0);
+                forceDir += glm::dvec3(0, 0, -1);
             if (Control::pressed(Control::Button::Left))
                 forceDir += glm::dvec3(1, 0, 0);
             if (Control::pressed(Control::Button::Right))
                 forceDir += glm::dvec3(-1, 0, 0);
+            if (Control::pressed(Control::Button::A))
+                forceDir += glm::dvec3(0, -1, 0);
+            if (Control::pressed(Control::Button::Z))
+                forceDir += glm::dvec3(0, 1, 0);
+            if (Control::pressed(Control::Button::Space))
+                attract(entity, forceDir, 1000.0);
             auto forceDirLength = glm::length(forceDir);
             if (forceDirLength > 1.0)
                 forceDir /= forceDirLength;
@@ -53,6 +75,7 @@ Game::Game() {
     m_visualScene = std::make_unique<vi::Scene>();
     m_camera = std::make_unique<vi::Camera>(glm::vec3(0, 10, 4), glm::vec3(0, 0, 0));
     m_physWorld = std::make_unique<PhysWorld>();
+    //m_physWorld->setGravity({0.0, 0.0, -9.81});
 
     systems.add<RenderSystem>();
     systems.add<ControlSystem>();
@@ -66,15 +89,23 @@ void Game::loadLevel() {
 
     ex::Entity sphereEntity = entities.create();
     sphereEntity.assign<vi::Model>(*m_visualScene.get(), vi::MeshPrimitive::lodSphere(), sphereMaterial);
-    sphereEntity.assign<PhysBody>(*m_physWorld.get(), CollisionSphere(*m_physWorld.get(), 1.0), 1.0, vec3d(0.3, 0.3, 0.3));
+    sphereEntity.assign<PhysBody>(*m_physWorld.get(), CollisionSphere(*m_physWorld.get(), 1.0), 2.0, vec3d(0.6, 0.6, 0.6));
     sphereEntity.assign<Control>();
-    sphereEntity.component<PhysBody>()->setPos({0.0, 0.0, 10.0});
+    sphereEntity.component<PhysBody>()->setPos({0.0, 0.0, 0.0});
 
-    ex::Entity planeEntity = entities.create();
-    glm::dvec3 cubeScale(10000.0, 10000.0, 1.0);
-    auto cubemesh = std::make_shared<vi::Mesh>(vi::MeshDataPrimitive::cube(cubeScale));
-    planeEntity.assign<vi::Model>(*m_visualScene.get(), cubemesh, planeMaterial);
-    planeEntity.assign<PhysBody>(*m_physWorld.get(), CollisionCuboid(*m_physWorld.get(), cubeScale * 2.0), 0.0, vec3d(0.0, 0.0, -1.0));
+    auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.2, 0.2, 0.2});
+    for (int i = 0; i < 50; i++) {
+        ex::Entity asteroidEntity = entities.create();
+        asteroidEntity.assign<vi::Model>(*m_visualScene.get(), vi::MeshPrimitive::lodSphere(), asteroidMaterial);
+        asteroidEntity.assign<PhysBody>(*m_physWorld.get(), CollisionSphere(*m_physWorld.get(), 1.0), 1.0, vec3d(0.3, 0.3, 0.3));
+        asteroidEntity.component<PhysBody>()->setPos(glm::sphericalRand(10.0));
+    }
+
+    //    ex::Entity planeEntity = entities.create();
+    //    glm::dvec3 cubeScale(10000.0, 10000.0, 1.0);
+    //    auto cubemesh = std::make_shared<vi::Mesh>(vi::MeshDataPrimitive::cube(cubeScale));
+    //    planeEntity.assign<vi::Model>(*m_visualScene.get(), cubemesh, planeMaterial);
+    //    planeEntity.assign<PhysBody>(*m_physWorld.get(), CollisionCuboid(*m_physWorld.get(), cubeScale * 2.0), 0.0, vec3d(0.0, 0.0, -1.0));
 }
 
 Game::~Game() {

@@ -10,12 +10,15 @@ using vec2d = glm::vec<2, double, glm::highp>;
 // PHYSICS WORLD
 class PhysWorld {
     class NewtonWorld *m_world;
+    glm::dvec3 m_gravity;
 
   public:
-    PhysWorld();
+    PhysWorld(glm::dvec3 gravity = glm::dvec3(0.0));
     ~PhysWorld();
     inline NewtonWorld *get() const { return m_world; }
     void update(const double dt);
+    void setGravity(const glm::dvec3 gravity) { m_gravity = gravity; }
+    glm::dvec3 getGravity() { return m_gravity; }
 };
 
 // COLLISION SHAPE

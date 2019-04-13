@@ -23,12 +23,13 @@ static const mat4d Identity(1.0);
 int CollisionShape::shapeCounter = 0;
 
 // PHYSICS WORLD
-PhysWorld::PhysWorld() {
+PhysWorld::PhysWorld(glm::dvec3 gravity) {
     m_world = NewtonCreate();
     //DLOG(NewtonGetMaxThreadsCount(m_world));
     //THROW();
     NewtonSetThreadsCount(m_world, 40);
-    NewtonSetNumberOfSubsteps(m_world, 8);
+    NewtonSetNumberOfSubsteps(m_world, 4);
+    m_gravity = gravity;
     DLOG("world created");
 }
 
@@ -42,15 +43,14 @@ PhysWorld::~PhysWorld() {
 
 void PhysWorld::update(const double dt) {
     NewtonUpdate(m_world, dt);
-
     //NewtonUpdateAsync(m_world, dt);
 
     for (NewtonBody *body = NewtonWorldGetFirstBody(m_world); body != nullptr; body = NewtonWorldGetNextBody(m_world, body)) {
         double mass, Ixx, Iyy, Izz;
         NewtonBodyGetMass(body, &mass, &Ixx, &Iyy, &Izz);
         PhysBody::Data *mydata = GetBodyData(body);
-        mydata->torque = {0.0, 0.0, 0.0};                  // reset force to prevent accumulation from previous update
-        mydata->force = {0.0, 0.0, 1.0 * -9.80665 * mass}; // G-force // gravity here;
+        mydata->torque = {0.0, 0.0, 0.0}; // reset force to prevent accumulation from previous update
+        mydata->force = m_gravity * mass; // G-force // gravity here;
     }
 }
 
@@ -91,7 +91,7 @@ void setForcesAndTorques(const NewtonBody *const body, double timestep, int thre
 
     glm::dvec3 speed; // calculate aerodynamics
     NewtonBodyGetVelocity(body, value_ptr(speed));
-    glm::dvec3 aeroForce = -0.005 * glm::length(speed) * speed;
+    glm::dvec3 aeroForce = -0.001 * glm::length(speed) * speed;
     mydata->force += aeroForce;
 
     NewtonBodyAddForce(body, value_ptr(mydata->force));

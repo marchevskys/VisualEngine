@@ -147,7 +147,7 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
                         int maxLodLevel = m->getMesh()->getLodCount();
 
                         float screenSpaceSize = linearSize(m->getTransform());
-                        int lod = int(maxLodLevel - sqrt(screenSpaceSize) * 10.1);
+                        int lod = int(maxLodLevel - sqrt(screenSpaceSize) * 20.1);
                         s->setModelMatrix(m->getTransform());
                         m->getMesh()->draw(glm::clamp(lod, 0, maxLodLevel - 1));
                     });
