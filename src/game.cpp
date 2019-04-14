@@ -78,7 +78,7 @@ struct ControlSystem : public ex::System<ControlSystem> {
             forceDir = cameraTransform * forceDir;
             body.addForce(forceDir);
 
-            float radius = 6.0f;
+            static float radius = 6.0f;
             glm::vec3 pos = body.getPos();
             glm::vec3 dir = glm::normalize(pos - m_Camera->getPos());
 
@@ -86,6 +86,8 @@ struct ControlSystem : public ex::System<ControlSystem> {
             if (glm::length(deltAngle))
                 dir = glm::rotate(dir, glm::length(deltAngle), transformedAngle);
 
+            radius *= 1.0 + Control::scrollOffset() * 0.07;
+            radius = glm::clamp(radius, 0.5f, 1000.0f);
             m_Camera->set(pos - dir * radius, pos, glm::vec3(0, 0, 1));
         });
         if (Control::pressed(Control::Button::F1))
@@ -97,8 +99,9 @@ struct ControlSystem : public ex::System<ControlSystem> {
 
 Game::Game() {
     m_visualScene = std::make_unique<vi::Scene>();
+    m_renderer = std::make_unique<vi::Renderer>();
     m_camera = std::make_shared<vi::Camera>(glm::vec3(0, 1, 0), glm::vec3(0, 0, 0));
-    m_camera->setFOV(1.4f);
+    m_camera->setFOV(1.6f);
     m_physWorld = std::make_unique<PhysWorld>();
 
     systems.add<RenderSystem>();
@@ -118,11 +121,12 @@ void Game::loadLevel() {
     sphereEntity.component<PhysBody>()->setPos({0.0, 0.0, 0.0});
 
     auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.2, 0.2, 0.2});
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 150; i++) {
         ex::Entity asteroidEntity = entities.create();
         asteroidEntity.assign<vi::Model>(*m_visualScene.get(), vi::MeshPrimitive::lodSphere(), asteroidMaterial);
         asteroidEntity.assign<PhysBody>(*m_physWorld.get(), CollisionSphere(*m_physWorld.get(), 1.0), 1.0, vec3d(0.3, 0.3, 0.3));
         asteroidEntity.component<PhysBody>()->setPos(glm::ballRand(25.0));
+        asteroidEntity.component<PhysBody>()->setVelocity(glm::ballRand(25.0));
     }
 
     //    ex::Entity planeEntity = entities.create();
@@ -141,12 +145,18 @@ Game::~Game() {
 
 void Game::update(double dt) {
     systems.update<ControlSystem>(dt);
-    m_physWorld->update(dt);
+    static double k = 1.0;
+    if (Control::pressed(Control::Button::S)) // sloooooow moooooootiooon
+        k -= 0.05;
+    else
+        k += 0.05;
+    k = glm::clamp(k, 0.1, 1.0);
+    m_physWorld->update(dt * k);
 }
 
-void Game::render(const Visual::Renderer &renderer, Visual::IFrameBuffer &frameBuffer) {
+void Game::render(Visual::IFrameBuffer &frameBuffer) {
     systems.update<RenderSystem>(0.0);
-    renderer.draw(*m_visualScene, *m_camera, frameBuffer);
+    m_renderer->draw(*m_visualScene, *m_camera, frameBuffer);
 }
 
 void Game::addObject() {

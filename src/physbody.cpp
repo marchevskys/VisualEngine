@@ -91,7 +91,7 @@ void setForcesAndTorques(const NewtonBody *const body, double timestep, int thre
 
     glm::dvec3 speed; // calculate aerodynamics
     NewtonBodyGetVelocity(body, value_ptr(speed));
-    glm::dvec3 aeroForce = -0.001 * glm::length(speed) * speed;
+    glm::dvec3 aeroForce = -0.01 * glm::length(speed) * speed;
     mydata->force += aeroForce;
 
     NewtonBodyAddForce(body, value_ptr(mydata->force));

@@ -21,7 +21,7 @@ class Game : public ex::EntityX {
     ~Game();
 
     void update(double dt);
-    void render(const vi::Renderer &renderer, vi::IFrameBuffer &frameBuffer);
+    void render(vi::IFrameBuffer &frameBuffer);
     void addObject();
 
   private:

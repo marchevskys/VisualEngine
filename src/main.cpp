@@ -32,12 +32,11 @@ int main() {
 
         Game game;
         game.loadLevel();
-        vi::Renderer renderer;
 
         constexpr double dt = 1.0 / 60.0;
         while (window.active()) {
             game.update(dt);
-            game.render(renderer, window);
+            game.render(window);
             window.refresh();
         }
     } catch (const std::exception &except) {
