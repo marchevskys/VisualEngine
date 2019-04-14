@@ -1,6 +1,7 @@
 #include "window.h"
 #include "control.h"
 #include "logger.h"
+#include "imgui_helper.h"
 
 //#include <glad/glad.h>
 #include <GL/glew.h>
@@ -40,40 +41,6 @@ class WindowManager {
     static WindowManager *getInstance() {
         static WindowManager winManager;
         return &winManager;
-    }
-};
-
-// Covers ImGui loading / unloading.
-class ImGuiHelper {
-  private:
-    ImGuiHelper(GLFWwindow *window) {
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGuiIO &io = ImGui::GetIO();
-        (void)io;
-        //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-        //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
-
-        // Setup Dear ImGui style
-        ImGui::StyleColorsDark();
-        //ImGui::StyleColorsClassic();
-
-        // Setup Platform/Renderer bindings
-        ImGui_ImplGlfw_InitForOpenGL(window, true);
-        ImGui_ImplGlfw_Shutdown();
-        ImGui_ImplOpenGL3_Init(nullptr); // using default OpenGL version, 130
-        DLOG("ImGui initialized");
-    }
-
-    ~ImGuiHelper() {
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplGlfw_Shutdown();
-        ImGui::DestroyContext();
-    }
-
-  public:
-    static void InitImGui(GLFWwindow *window) {
-        static ImGuiHelper helper(window);
     }
 };
 

@@ -22,17 +22,13 @@
 #include <iostream>
 #include <mutex>
 
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
+#include "imgui_helper.h"
 
 #include "Config.h"
 
 static std::mutex RenderLocker;
 
 namespace Visual {
-
-void MineImGuiWindow();
 
 class RenderPass {
   public:
@@ -169,7 +165,7 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        MineImGuiWindow();
+        ImGuiHelper::drawWindow();
 
         ImGui::Render();
 
@@ -211,19 +207,13 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
 
 Renderer::Renderer() {
     m_renderData.reset(new RenderData);
-    m_imGuiEnabled = Config::get()->is_option_enabled(Config::Option::ImGuiEnabled);
-    Config::get()->add_listener(Config::Option::ImGuiEnabled, [this](bool imgui_enabled) { m_imGuiEnabled = imgui_enabled; });
+    std::any enabled = Config::get()->get_option(Config::Option::ImGuiEnabled);
+    m_imGuiEnabled = std::any_cast<bool>(enabled);
+    Config::get()->add_listener(Config::Option::ImGuiEnabled, [this](std::any imgui_enabled) { m_imGuiEnabled = std::any_cast<bool>(imgui_enabled); });
 }
 
 Renderer::~Renderer() {
     Config::get()->remove_listener(Config::Option::ImGuiEnabled);
-}
-
-// Simple imgui window
-void MineImGuiWindow() {
-    ImGui::Begin("config");
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    ImGui::End();
 }
 
 } // namespace Visual

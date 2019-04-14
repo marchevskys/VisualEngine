@@ -19,6 +19,7 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include "Config.h"
+#include "imgui_helper.h"
 
 struct RenderSystem : public ex::System<RenderSystem> {
     void update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt) override {
@@ -91,9 +92,9 @@ struct ControlSystem : public ex::System<ControlSystem> {
             m_Camera->set(pos - dir * radius, pos, glm::vec3(0, 0, 1));
         });
         if (Control::pressed(Control::Button::F1))
-            Config::get()->set_option_enabled(Config::Option::ImGuiEnabled, true);
+            Config::get()->set_option_value(Config::Option::ImGuiEnabled, true);
         if (Control::pressed(Control::Button::F2))
-            Config::get()->set_option_enabled(Config::Option::ImGuiEnabled, false);
+            Config::get()->set_option_value(Config::Option::ImGuiEnabled, false);
     }
 };
 
@@ -112,16 +113,16 @@ Game::Game() {
 void Game::loadLevel() {
 
     auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{1.8, 0.8, 0.8});
-    auto planeMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.1, 0.1, 0.1});
-
     ex::Entity sphereEntity = entities.create();
+
     sphereEntity.assign<vi::Model>(*m_visualScene.get(), vi::MeshPrimitive::lodSphere(), sphereMaterial);
     sphereEntity.assign<PhysBody>(*m_physWorld.get(), CollisionSphere(*m_physWorld.get(), 1.0), 2.0, vec3d(0.6, 0.6, 0.6));
     sphereEntity.assign<Control>();
-    sphereEntity.component<PhysBody>()->setPos({0.0, 0.0, 0.0});
-
-    auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.2, 0.2, 0.2});
-    for (int i = 0; i < 150; i++) {
+    vec3d shipPosition = std::any_cast<vec3d>(Config::get()->get_option(Config::Option::ShipPosition));
+    sphereEntity.component<PhysBody>()->setPos(shipPosition);
+    
+    auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{ 0.2, 0.2, 0.2 });
+    for (int i = 0; i < 50; i++) {
         ex::Entity asteroidEntity = entities.create();
         asteroidEntity.assign<vi::Model>(*m_visualScene.get(), vi::MeshPrimitive::lodSphere(), asteroidMaterial);
         asteroidEntity.assign<PhysBody>(*m_physWorld.get(), CollisionSphere(*m_physWorld.get(), 1.0), 1.0, vec3d(0.3, 0.3, 0.3));
@@ -152,6 +153,11 @@ void Game::update(double dt) {
         k += 0.05;
     k = glm::clamp(k, 0.1, 1.0);
     m_physWorld->update(dt * k);
+
+    entities.each<PhysBody, Control>([](ex::Entity e, PhysBody& pb, Control& ctrl) {
+       vec3d position = pb.getPos();
+       ImGuiHelper::setShipCoordinates(position);
+    });
 }
 
 void Game::render(Visual::IFrameBuffer &frameBuffer) {
