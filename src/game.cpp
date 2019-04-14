@@ -70,6 +70,11 @@ struct ControlSystem : public ex::System<ControlSystem> {
                 forceDir += glm::dvec3(0, 0, 1);
             if (Control::pressed(Control::Button::Space))
                 attract(entity, forceDir, 1000.0);
+            if (Control::pressed(Control::Button::Enter)) {
+               body.setVelocity(glm::vec3(0.));
+               body.setOmega(glm::vec3(0.));
+            }
+
             auto forceDirLength = glm::length(forceDir);
             if (forceDirLength > 1.0)
                 forceDir /= forceDirLength;

@@ -11,6 +11,7 @@ Coordinates Control::m_currentMousePos{0.0, 0.0};
 static Coordinates m_prevMousePos{0.0, 0.0};
 static Coordinates diff{0, 0};
 std::map<Control::Button, int> Control::keymapper;
+bool Control::m_Locked = false;
 
 Control::Control() {
     if (keymapper.empty()) {
@@ -57,7 +58,12 @@ double Control::scrollOffset() {
 }
 
 Coordinates Control::mousePos() {
-    return diff;
+   if (m_Locked) {
+      return { 0, 0 };
+   }
+   else {
+      return diff;
+   }
 }
 
 bool Control::pressed(Control::Button button) {

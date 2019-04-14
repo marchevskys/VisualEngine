@@ -23,6 +23,7 @@ class Control {
     static bool keys[1024];
     static double scroll;
     static Coordinates m_currentMousePos;
+    static bool m_Locked;
 
   public:
     enum class Button { // clang-format off
@@ -44,6 +45,8 @@ class Control {
     static void resetMouse();
     static void resetKeyboard();
     static std::map<Button, int> keymapper;
+    static void lockMouse() { m_Locked = true; }
+    static void unlockMouse() { m_Locked = false; }
 
     Control();
 };

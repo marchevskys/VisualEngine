@@ -48,15 +48,22 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    static bool sIsUp = true;
-    if (key == GLFW_KEY_F && action == GLFW_PRESS && sIsUp) {
+    if (key == GLFW_KEY_F && action == GLFW_RELEASE) {
         Window::currentWindow->toggleFullscreen();
-        //glViewport(0, 0, Window::primaryScreenWidth, Window::primaryScreenHeight);
-        sIsUp = false;
     }
 
-    else if (action == GLFW_RELEASE)
-        sIsUp = true;
+    if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_RELEASE) {
+       int mode = glfwGetInputMode(window, GLFW_CURSOR);
+       if (mode == GLFW_CURSOR_NORMAL) {
+          glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+          Control::unlockMouse();
+       }
+       else {
+          glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+          Control::lockMouse();
+       }
+
+    }
 
     Control::key_callback(window, key, scancode, action, mode);
 }
@@ -103,6 +110,10 @@ void Window::toggleFullscreen() {
         DLOGN(primaryScreenWidth, primaryScreenHeight);
     }
     DLOGN(m_fullScreen);
+}
+
+void SetCursorCaptured(bool captured) {
+
 }
 
 Window::Window(int width, int height, const char *_name, bool _fullScreen) : m_fullScreen(_fullScreen) {
