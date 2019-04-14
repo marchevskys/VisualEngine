@@ -130,17 +130,19 @@ const Mesh &MeshPrimitive::quad() {
     return qu;
 }
 
-const std::shared_ptr<Mesh> MeshPrimitive::cube() {
-
-    return std::make_shared<Mesh>(MeshDataPrimitive::cube());
+const std::shared_ptr<Mesh> &MeshPrimitive::cube() {
+    static std::shared_ptr<Mesh> sharedCube(new Mesh(MeshDataPrimitive::cube()));
+    return sharedCube;
 }
 
-const std::shared_ptr<Mesh> MeshPrimitive::lodSphere() {
-    return std::shared_ptr<Mesh>(new Mesh{MeshDataPrimitive::sphere(40),
-                                          MeshDataPrimitive::sphere(20),
-                                          MeshDataPrimitive::sphere(10),
-                                          MeshDataPrimitive::sphere(5),
-                                          MeshDataPrimitive::sphere(2)});
+const std::shared_ptr<Mesh> &MeshPrimitive::lodSphere() {
+    static std::shared_ptr<Mesh> sharedSphere(new Mesh{MeshDataPrimitive::sphere(40),
+                                                       MeshDataPrimitive::sphere(20),
+                                                       MeshDataPrimitive::sphere(10),
+                                                       MeshDataPrimitive::sphere(5),
+                                                       MeshDataPrimitive::sphere(2)});
+
+    return sharedSphere;
 }
 
 } // namespace Visual

@@ -15,7 +15,10 @@ class Camera {
     glm::vec<3, Precision, glm::highp> getPos() const { return m_pos; }
 
     template <class Precision = float>
-    glm::vec<3, Precision, glm::highp> getDir() const { return m_view[2]; };
+    glm::vec<3, Precision, glm::highp> getDir() const { return glm::normalize(m_aim - m_pos); };
+
+    template <class Precision = float>
+    glm::vec<3, Precision, glm::highp> getUp() const { return glm::normalize(m_up); };
 
     void move(glm::vec3 offset);
     void rotate(glm::vec3 angle);

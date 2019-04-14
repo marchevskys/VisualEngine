@@ -7,8 +7,8 @@
 #include <GLFW/glfw3.h>
 
 #include "imgui.h"
-#include "imgui_impl_opengl3.h"
 #include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
 #include <functional>
 #include <iostream>
@@ -43,36 +43,38 @@ class WindowManager {
     }
 };
 
-// Covers ImGui loading / unloading. 
+// Covers ImGui loading / unloading.
 class ImGuiHelper {
-private:
-   ImGuiHelper(GLFWwindow* window) {
-      IMGUI_CHECKVERSION();
-      ImGui::CreateContext();
-      ImGuiIO& io = ImGui::GetIO(); (void)io;
-      //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-      //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
+  private:
+    ImGuiHelper(GLFWwindow *window) {
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO &io = ImGui::GetIO();
+        (void)io;
+        //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+        //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
 
-      // Setup Dear ImGui style
-      ImGui::StyleColorsDark();
-      //ImGui::StyleColorsClassic();
+        // Setup Dear ImGui style
+        ImGui::StyleColorsDark();
+        //ImGui::StyleColorsClassic();
 
-      // Setup Platform/Renderer bindings
-      ImGui_ImplGlfw_InitForOpenGL(window, true);
-      ImGui_ImplGlfw_Shutdown();
-      ImGui_ImplOpenGL3_Init(nullptr);	// using default OpenGL version, 130
-      DLOG("ImGui initialized");
-   }
+        // Setup Platform/Renderer bindings
+        ImGui_ImplGlfw_InitForOpenGL(window, true);
+        ImGui_ImplGlfw_Shutdown();
+        ImGui_ImplOpenGL3_Init(nullptr); // using default OpenGL version, 130
+        DLOG("ImGui initialized");
+    }
 
-   ~ImGuiHelper() {
-      ImGui_ImplOpenGL3_Shutdown();
-      ImGui_ImplGlfw_Shutdown();
-      ImGui::DestroyContext();
-   }
-public:
-   static void InitImGui(GLFWwindow* window) {
-      static ImGuiHelper helper(window);
-   }
+    ~ImGuiHelper() {
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+    }
+
+  public:
+    static void InitImGui(GLFWwindow *window) {
+        static ImGuiHelper helper(window);
+    }
 };
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode) {
@@ -110,7 +112,7 @@ void Window::resize(int width, int height) {
 }
 
 // clang-format off
-//#define CAPTURED_CURSOR
+#define CAPTURED_CURSOR
 #ifdef CAPTURED_CURSOR
 #define CURSOR_WINDOW_MODE      GLFW_CURSOR_DISABLED
 #define CURSOR_FULL_SCREEN_MODE GLFW_CURSOR_DISABLED
@@ -177,10 +179,9 @@ Window::Window(int width, int height, const char *_name, bool _fullScreen) : m_f
 
 void Window::refresh() {
     currentWindow = this;
+    Control::resetMouse();
     glfwSwapBuffers(m_window);
     glfwPollEvents();
-
-    Control::resetMouse();
 }
 
 float Window::bind() const {

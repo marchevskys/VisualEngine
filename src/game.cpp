@@ -51,8 +51,9 @@ struct ControlSystem : public ex::System<ControlSystem> {
         };
 
         es.each<Control, PhysBody>([dt, attract, this](ex::Entity entity, Control &control, PhysBody &body) {
-            glm::vec3 pos = body.getPos();
-            glm::vec3 dir = glm::normalize(pos - m_Camera->getPos());
+            auto diff = Control::mousePos();
+            glm::vec3 deltAngle = glm::dvec3(diff.y, diff.x, 0.0) * .01;
+
             glm::dvec3 forceDir(0, 0, 0);
             if (Control::pressed(Control::Button::Up))
                 forceDir += glm::dvec3(0, 1, 0);
@@ -73,10 +74,17 @@ struct ControlSystem : public ex::System<ControlSystem> {
                 forceDir /= forceDirLength;
             forceDir *= 10.0;
 
-            forceDir = glm::dmat3(glm::inverse(m_Camera->getView<double>())) * forceDir;
+            glm::mat3 cameraTransform = glm::dmat3(glm::inverse(m_Camera->getView<double>()));
+            forceDir = cameraTransform * forceDir;
             body.addForce(forceDir);
 
             float radius = 6.0f;
+            glm::vec3 pos = body.getPos();
+            glm::vec3 dir = glm::normalize(pos - m_Camera->getPos());
+
+            auto transformedAngle = cameraTransform * deltAngle;
+            if (glm::length(deltAngle))
+                dir = glm::rotate(dir, glm::length(deltAngle), transformedAngle);
 
             m_Camera->set(pos - dir * radius, pos, glm::vec3(0, 0, 1));
         });

@@ -176,7 +176,7 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
-    return;
+    //return;
     // BBox pass
     {
         GL::setDepthTest(GL::DepthTest::Enabled);

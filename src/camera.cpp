@@ -38,7 +38,7 @@ void Camera::move(glm::vec3 offset) {
 void Camera::rotate(glm::vec3 angle) {
     auto radiusVec = m_aim - m_pos;
     radiusVec = glm::rotate(radiusVec, glm::length(angle), m_up);
-    m_aim = m_pos + radiusVec;
+    m_pos = m_aim - radiusVec;
     updateView();
 }
 
