@@ -52,9 +52,6 @@ struct ControlSystem : public ex::System<ControlSystem> {
         };
 
         es.each<Control, PhysBody>([dt, attract, this](ex::Entity entity, Control &control, PhysBody &body) {
-            auto diff = Control::mousePos();
-            glm::vec3 deltAngle = glm::dvec3(diff.y, diff.x, 0.0) * .01;
-
             glm::dvec3 forceDir(0, 0, 0);
             if (Control::pressed(Control::Button::Up))
                 forceDir += glm::dvec3(0, 1, 0);
@@ -71,8 +68,8 @@ struct ControlSystem : public ex::System<ControlSystem> {
             if (Control::pressed(Control::Button::Space))
                 attract(entity, forceDir, 1000.0);
             if (Control::pressed(Control::Button::Enter)) {
-               body.setVelocity(glm::vec3(0.));
-               body.setOmega(glm::vec3(0.));
+                body.setVelocity(glm::vec3(0.));
+                body.setOmega(glm::vec3(0.));
             }
 
             auto forceDirLength = glm::length(forceDir);
@@ -80,22 +77,21 @@ struct ControlSystem : public ex::System<ControlSystem> {
                 forceDir /= forceDirLength;
             forceDir *= 10.0;
 
-            glm::mat3 cameraTransform = glm::dmat3(glm::inverse(m_Camera->getView<double>()));
+            vi::CameraTrackRotate *cam = dynamic_cast<vi::CameraTrackRotate *>(m_Camera.get());
+
+            glm::mat3 cameraTransform = glm::dmat3(glm::inverse(cam->getView<double>()));
             forceDir = cameraTransform * forceDir;
             body.addForce(forceDir);
 
-            static float radius = 6.0f;
+            float radius = cam->getDistance();
             glm::vec3 pos = body.getPos();
-            glm::vec3 dir = glm::normalize(pos - m_Camera->getPos());
-
-            auto transformedAngle = cameraTransform * deltAngle;
-            if (glm::length(deltAngle))
-                dir = glm::rotate(dir, glm::length(deltAngle), transformedAngle);
 
             radius *= 1.0 + Control::scrollOffset() * 0.07;
             radius = glm::clamp(radius, 0.5f, 1000.0f);
-            m_Camera->set(pos - dir * radius, pos, glm::vec3(0, 0, 1));
+            auto diff = Control::mousePos();
+            cam->update(pos, diff.x * 0.01f, -diff.y * 0.01f, radius);
         });
+
         if (Control::pressed(Control::Button::F1))
             Config::get()->set_option_value(Config::Option::ImGuiEnabled, true);
         if (Control::pressed(Control::Button::F2))
@@ -106,7 +102,7 @@ struct ControlSystem : public ex::System<ControlSystem> {
 Game::Game() {
     m_visualScene = std::make_unique<vi::Scene>();
     m_renderer = std::make_unique<vi::Renderer>();
-    m_camera = std::make_shared<vi::Camera>(glm::vec3(0, 1, 0), glm::vec3(0, 0, 0));
+    m_camera = std::make_shared<vi::CameraTrackRotate>(glm::vec3(0, 1, 0), glm::vec3(0, 0, 0));
     m_camera->setFOV(1.6f);
     m_physWorld = std::make_unique<PhysWorld>();
 
@@ -125,21 +121,15 @@ void Game::loadLevel() {
     sphereEntity.assign<Control>();
     vec3d shipPosition = std::any_cast<vec3d>(Config::get()->get_option(Config::Option::ShipPosition));
     sphereEntity.component<PhysBody>()->setPos(shipPosition);
-    
-    auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{ 0.2, 0.2, 0.2 });
+
+    auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.2, 0.2, 0.2});
     for (int i = 0; i < 50; i++) {
         ex::Entity asteroidEntity = entities.create();
         asteroidEntity.assign<vi::Model>(*m_visualScene.get(), vi::MeshPrimitive::lodSphere(), asteroidMaterial);
         asteroidEntity.assign<PhysBody>(*m_physWorld.get(), CollisionSphere(*m_physWorld.get(), 1.0), 1.0, vec3d(0.3, 0.3, 0.3));
         asteroidEntity.component<PhysBody>()->setPos(glm::ballRand(25.0));
-        asteroidEntity.component<PhysBody>()->setVelocity(glm::ballRand(25.0));
+        //asteroidEntity.component<PhysBody>()->setVelocity(glm::ballRand(25.0));
     }
-
-    //    ex::Entity planeEntity = entities.create();
-    //    glm::dvec3 cubeScale(10000.0, 10000.0, 1.0);
-    //    auto cubemesh = std::make_shared<vi::Mesh>(vi::MeshDataPrimitive::cube(cubeScale));
-    //    planeEntity.assign<vi::Model>(*m_visualScene.get(), cubemesh, planeMaterial);
-    //    planeEntity.assign<PhysBody>(*m_physWorld.get(), CollisionCuboid(*m_physWorld.get(), cubeScale * 2.0), 0.0, vec3d(0.0, 0.0, -1.0));
 }
 
 Game::~Game() {
@@ -151,17 +141,24 @@ Game::~Game() {
 
 void Game::update(double dt) {
     systems.update<ControlSystem>(dt);
-    static double k = 1.0;
+    static double k = 1.0, k2 = 1.0;
     if (Control::pressed(Control::Button::S)) // sloooooow moooooootiooon
-        k -= 0.05;
+        k -= 0.08;
     else
-        k += 0.05;
+        k += 0.08;
     k = glm::clamp(k, 0.1, 1.0);
-    m_physWorld->update(dt * k);
 
-    entities.each<PhysBody, Control>([](ex::Entity e, PhysBody& pb, Control& ctrl) {
-       vec3d position = pb.getPos();
-       ImGuiHelper::setShipCoordinates(position);
+    if (Control::pressed(Control::Button::D)) // sloooooow moooooootiooon
+        k2 *= 1.14;
+    else
+        k2 /= 1.14;
+
+    k2 = glm::clamp(k2, 1.0, 20.0);
+    m_physWorld->update(dt * k * k2);
+
+    entities.each<PhysBody, Control>([](ex::Entity e, PhysBody &pb, Control &ctrl) {
+        vec3d position = pb.getPos();
+        ImGuiHelper::setShipCoordinates(position);
     });
 }
 

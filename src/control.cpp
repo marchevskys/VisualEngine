@@ -21,13 +21,33 @@ Control::Control() {
         keymapper[Control::Button::Right] = GLFW_KEY_RIGHT;
         keymapper[Control::Button::Space] = GLFW_KEY_SPACE;
         keymapper[Control::Button::Enter] = GLFW_KEY_ENTER;
-        keymapper[Control::Button::W] = GLFW_KEY_W;
         keymapper[Control::Button::A] = GLFW_KEY_A;
-        keymapper[Control::Button::Z] = GLFW_KEY_Z;
-        keymapper[Control::Button::S] = GLFW_KEY_S;
+        keymapper[Control::Button::B] = GLFW_KEY_B;
+        keymapper[Control::Button::C] = GLFW_KEY_C;
         keymapper[Control::Button::D] = GLFW_KEY_D;
         keymapper[Control::Button::E] = GLFW_KEY_E;
+        keymapper[Control::Button::F] = GLFW_KEY_F;
+        keymapper[Control::Button::G] = GLFW_KEY_G;
+        keymapper[Control::Button::H] = GLFW_KEY_H;
+        keymapper[Control::Button::I] = GLFW_KEY_I;
+        keymapper[Control::Button::J] = GLFW_KEY_J;
+        keymapper[Control::Button::K] = GLFW_KEY_K;
+        keymapper[Control::Button::L] = GLFW_KEY_L;
+        keymapper[Control::Button::M] = GLFW_KEY_M;
+        keymapper[Control::Button::N] = GLFW_KEY_N;
+        keymapper[Control::Button::O] = GLFW_KEY_O;
+        keymapper[Control::Button::P] = GLFW_KEY_P;
         keymapper[Control::Button::Q] = GLFW_KEY_Q;
+        keymapper[Control::Button::R] = GLFW_KEY_R;
+        keymapper[Control::Button::S] = GLFW_KEY_S;
+        keymapper[Control::Button::T] = GLFW_KEY_T;
+        keymapper[Control::Button::U] = GLFW_KEY_U;
+        keymapper[Control::Button::V] = GLFW_KEY_V;
+        keymapper[Control::Button::W] = GLFW_KEY_W;
+        keymapper[Control::Button::X] = GLFW_KEY_X;
+        keymapper[Control::Button::Y] = GLFW_KEY_Y;
+        keymapper[Control::Button::Z] = GLFW_KEY_Z;
+
         keymapper[Control::Button::F1] = GLFW_KEY_F1;
         keymapper[Control::Button::F2] = GLFW_KEY_F2;
     }
@@ -58,12 +78,11 @@ double Control::scrollOffset() {
 }
 
 Coordinates Control::mousePos() {
-   if (m_Locked) {
-      return { 0, 0 };
-   }
-   else {
-      return diff;
-   }
+    if (m_Locked) {
+        return {0, 0};
+    } else {
+        return diff;
+    }
 }
 
 bool Control::pressed(Control::Button button) {

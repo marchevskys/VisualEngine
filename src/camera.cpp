@@ -35,15 +35,20 @@ void Camera::move(glm::vec3 offset) {
     updateView();
 }
 
-void Camera::rotate(glm::vec3 angle) {
-    auto radiusVec = m_aim - m_pos;
-    radiusVec = glm::rotate(radiusVec, glm::length(angle), m_up);
-    m_pos = m_aim - radiusVec;
-    updateView();
-}
-
 void Camera::updateView() {
     m_view = glm::lookAt(m_pos, m_aim, m_up);
+}
+
+void CameraTrackRotate::update(glm::vec3 pos, float x, float y, float distance) {
+    m_angleX += x;
+    m_angleY += y;
+    constexpr float pi2 = M_PI_2;
+    m_angleY = glm::clamp(m_angleY, -pi2 + 0.0001f, pi2 - 0.0001f);
+    glm::vec3 dir(1, 0, 0);
+    dir = glm::rotate(dir, m_angleY, glm::vec3(0, 1, 0));
+    dir = glm::rotate(dir, m_angleX, glm::vec3(0, 0, 1));
+
+    set(pos - dir * m_dist, pos, glm::vec3(0, 0, 1));
 }
 
 } // namespace Visual

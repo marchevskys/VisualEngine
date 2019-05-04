@@ -28,7 +28,7 @@ namespace vi = Visual;
 
 int main() {
     try {
-        Window window(1024, 768, "Main window", false);
+        Window window(1024, 768, "Main window", true);
 
         Game game;
         game.loadLevel();

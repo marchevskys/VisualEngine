@@ -28,7 +28,7 @@ class Control {
   public:
     enum class Button { // clang-format off
         Up, Down, Left, Right, Space, Enter,
-        W, A, S, D, E, Q, Z,
+        A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
         F1, F2
     }; // clang-format on
     static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);

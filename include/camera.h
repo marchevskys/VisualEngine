@@ -6,6 +6,8 @@ namespace Visual {
 class Camera {
   public:
     Camera(glm::dvec3 pos, glm::dvec3 aim);
+    virtual ~Camera() {}
+
     void set(glm::dvec3 pos, glm::dvec3 aim, glm::dvec3 up = {0.0, 0.0, 1.0});
 
     template <class Precision = float>
@@ -21,7 +23,6 @@ class Camera {
     glm::vec<3, Precision, glm::highp> getUp() const { return glm::normalize(m_up); };
 
     void move(glm::vec3 offset);
-    void rotate(glm::vec3 angle);
 
     void setFOV(float fov);
     void setFOV(double fov) { setFOV(static_cast<float>(fov)); };
@@ -43,5 +44,15 @@ class Camera {
     void updateView();
     void updateProjection();
 };
+
+// trackable camera with Z up direction
+class CameraTrackRotate : public Camera {
+  public:
+    CameraTrackRotate(glm::dvec3 pos, glm::dvec3 aim) : Camera(pos, aim) {}
+    float m_angleX = 0.f, m_angleY = 0.f, m_dist = 6.0f;
+    float getDistance() { return m_dist; }
+    void update(glm::vec3 pos, float x, float y, float distance);
+};
+
 } // namespace Visual
 #endif // CAMERA_H
