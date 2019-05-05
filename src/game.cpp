@@ -77,7 +77,7 @@ struct ControlSystem : public ex::System<ControlSystem> {
                 forceDir /= forceDirLength;
             forceDir *= 10.0;
 
-            vi::CameraTrackRotate *cam = dynamic_cast<vi::CameraTrackRotate *>(m_Camera.get());
+            vi::CameraRotateOmniDirect *cam = dynamic_cast<vi::CameraRotateOmniDirect *>(m_Camera.get());
 
             glm::mat3 cameraTransform = glm::dmat3(glm::inverse(cam->getView<double>()));
             forceDir = cameraTransform * forceDir;
@@ -102,7 +102,7 @@ struct ControlSystem : public ex::System<ControlSystem> {
 Game::Game() {
     m_visualScene = std::make_unique<vi::Scene>();
     m_renderer = std::make_unique<vi::Renderer>();
-    m_camera = std::make_shared<vi::CameraTrackRotate>(glm::vec3(0, 1, 0), glm::vec3(0, 0, 0));
+    m_camera = std::make_shared<vi::CameraRotateOmniDirect>(glm::vec3(0, 1, 0), glm::vec3(0, 0, 0));
     m_camera->setFOV(1.6f);
     m_physWorld = std::make_unique<PhysWorld>();
 

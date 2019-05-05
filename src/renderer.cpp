@@ -128,7 +128,7 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
         auto linearSize = [&](const glm::mat4 &model) {
             float objectRadius = glm::length(model[0] + model[1] + model[2]);
             glm::vec3 pos(model[3]);
-            auto dist = glm::distance(pos, camera.getPos<float>());
+            auto dist = glm::distance(pos, camera.getPos());
             return objectRadius / dist;
         };
 
