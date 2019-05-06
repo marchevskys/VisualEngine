@@ -6,6 +6,11 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/rotate_vector.hpp>
 
+#if defined _MSC_VER
+#define _USE_MATH_DEFINES
+#endif
+#include <math.h>
+
 namespace Visual {
 void Camera::updateProjection() { m_projection = glm::perspective(m_fov, m_aspectRatio, m_near, m_far); }
 
