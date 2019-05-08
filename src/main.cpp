@@ -12,6 +12,7 @@
 #include "scene.h"
 #include "texture.h"
 #include "window.h"
+#include "progression.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
@@ -25,17 +26,19 @@
 
 using namespace std;
 namespace vi = Visual;
+namespace gp = Gameplay;
 
 int main() {
     try {
-        Window window(1024, 768, "Main window", true);
+        Window window(1024, 768, "Main window", false);
 
         Game game;
-        game.loadLevel();
+        gp::ProgressionManager pm;
+        game.loadLevel(pm);
 
         constexpr double dt = 1.0 / 60.0;
         while (window.active()) {
-            game.update(dt);
+            game.update(dt, pm);
             game.render(window);
             window.refresh();
         }

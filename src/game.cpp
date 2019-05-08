@@ -10,6 +10,7 @@
 #include "physbody.h"
 #include "renderer.h"
 #include "scene.h"
+#include "progression.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
@@ -111,25 +112,26 @@ Game::Game() {
     systems.configure();
 }
 
-void Game::loadLevel() {
+void Game::loadLevel(gp::ProgressionManager& pm) {
+    pm.loadlevel(entities, *m_visualScene.get(), *m_physWorld.get());
 
-    auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{1.8, 0.8, 0.8});
-    ex::Entity sphereEntity = entities.create();
+    //auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{1.8, 0.8, 0.8});
+    //ex::Entity sphereEntity = entities.create();
 
-    sphereEntity.assign<vi::Model>(*m_visualScene.get(), vi::MeshPrimitive::lodSphere(), sphereMaterial);
-    sphereEntity.assign<PhysBody>(*m_physWorld.get(), CollisionSphere(*m_physWorld.get(), 1.0), 2.0, vec3d(0.6, 0.6, 0.6));
-    sphereEntity.assign<Control>();
-    vec3d shipPosition = std::any_cast<vec3d>(Config::get()->get_option(Config::Option::ShipPosition));
-    sphereEntity.component<PhysBody>()->setPos(shipPosition);
+    //sphereEntity.assign<vi::Model>(*m_visualScene.get(), vi::MeshPrimitive::lodSphere(), sphereMaterial);
+    //sphereEntity.assign<PhysBody>(*m_physWorld.get(), CollisionSphere(*m_physWorld.get(), 1.0), 2.0, vec3d(0.6, 0.6, 0.6));
+    //sphereEntity.assign<Control>();
+    //vec3d shipPosition = std::any_cast<vec3d>(Config::get()->get_option(Config::Option::ShipPosition));
+    //sphereEntity.component<PhysBody>()->setPos(shipPosition);
 
-    auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.2, 0.2, 0.2});
-    for (int i = 0; i < 50; i++) {
-        ex::Entity asteroidEntity = entities.create();
-        asteroidEntity.assign<vi::Model>(*m_visualScene.get(), vi::MeshPrimitive::lodSphere(), asteroidMaterial);
-        asteroidEntity.assign<PhysBody>(*m_physWorld.get(), CollisionSphere(*m_physWorld.get(), 1.0), 1.0, vec3d(0.3, 0.3, 0.3));
-        asteroidEntity.component<PhysBody>()->setPos(glm::ballRand(25.0));
-        //asteroidEntity.component<PhysBody>()->setVelocity(glm::ballRand(25.0));
-    }
+    //auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.2, 0.2, 0.2});
+    //for (int i = 0; i < 50; i++) {
+    //    ex::Entity asteroidEntity = entities.create();
+    //    asteroidEntity.assign<vi::Model>(*m_visualScene.get(), vi::MeshPrimitive::lodSphere(), asteroidMaterial);
+    //    asteroidEntity.assign<PhysBody>(*m_physWorld.get(), CollisionSphere(*m_physWorld.get(), 1.0), 1.0, vec3d(0.3, 0.3, 0.3));
+    //    asteroidEntity.component<PhysBody>()->setPos(glm::ballRand(25.0));
+    //    //asteroidEntity.component<PhysBody>()->setVelocity(glm::ballRand(25.0));
+    //}
 }
 
 Game::~Game() {
@@ -139,13 +141,14 @@ Game::~Game() {
     }
 }
 
-void Game::update(double dt) {
+void Game::update(double dt, gp::ProgressionManager& pm) {
+    pm.update(dt, entities, *m_visualScene.get(), *m_physWorld.get());
     systems.update<ControlSystem>(dt);
     static double k = 1.0, k2 = 1.0;
     if (Control::pressed(Control::Button::S)) // sloooooow moooooootiooon
         k -= 0.08;
     else
-        k += 0.08;
+        k += 0.08;   
     k = glm::clamp(k, 0.1, 1.0);
 
     if (Control::pressed(Control::Button::D)) // sloooooow moooooootiooon
