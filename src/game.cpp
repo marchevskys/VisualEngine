@@ -7,6 +7,7 @@
 #include "mesh.h"
 #include "meshdata.h"
 #include "model.h"
+#include "octree.h"
 #include "physbody.h"
 #include "renderer.h"
 #include "scene.h"
@@ -21,10 +22,24 @@
 #include "Config.h"
 #include "imgui_helper.h"
 
+struct Container {
+    Container(int) {}
+    Container() = default;
+};
+
+class GameData {
+  public:
+    vi::Scene visualScene;
+    vi::Renderer renderer;
+    std::shared_ptr<vi::Camera> camera;
+    PhysWorld physWorld;
+    Octree<Container> octree;
+};
 struct RenderSystem : public ex::System<RenderSystem> {
     void update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt) override {
         es.each<PhysBody, vi::Model>([dt](ex::Entity entity, PhysBody &body, vi::Model &model) {
-            model.setTransform(body.getMatrix());
+            if (!body.isSleeping())
+                model.setTransform(body.getMatrix());
         });
     }
 };
@@ -100,14 +115,13 @@ struct ControlSystem : public ex::System<ControlSystem> {
 };
 
 Game::Game() {
-    m_visualScene = std::make_unique<vi::Scene>();
-    m_renderer = std::make_unique<vi::Renderer>();
-    m_camera = std::make_shared<vi::CameraRotateOmniDirect>(glm::vec3(0, 1, 0), glm::vec3(0, 0, 0));
-    m_camera->setFOV(1.6f);
-    m_physWorld = std::make_unique<PhysWorld>();
+    m_data = std::make_unique<GameData>();
+
+    m_data->camera = std::make_shared<vi::CameraRotateOmniDirect>(glm::vec3(0, 1, 0), glm::vec3(0, 0, 0));
+    m_data->camera->setFOV(1.6f);
 
     systems.add<RenderSystem>();
-    systems.add<ControlSystem>(m_camera);
+    systems.add<ControlSystem>(m_data->camera);
     systems.configure();
 }
 
@@ -116,20 +130,20 @@ void Game::loadLevel() {
     auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{1.8, 0.8, 0.8});
     ex::Entity sphereEntity = entities.create();
 
-    sphereEntity.assign<vi::Model>(*m_visualScene.get(), vi::MeshPrimitive::lodSphere(), sphereMaterial);
-    sphereEntity.assign<PhysBody>(*m_physWorld.get(), CollisionSphere(*m_physWorld.get(), 1.0), 2.0, vec3d(0.6, 0.6, 0.6));
+    sphereEntity.assign<vi::Model>(m_data->visualScene, vi::MeshPrimitive::lodSphere(), sphereMaterial);
+    sphereEntity.assign<PhysBody>(m_data->physWorld, CollisionSphere(m_data->physWorld, 1.0), 2.0, vec3d(0.6, 0.6, 0.6));
     sphereEntity.assign<Control>();
     vec3d shipPosition = std::any_cast<vec3d>(Config::get()->get_option(Config::Option::ShipPosition));
     sphereEntity.component<PhysBody>()->setPos(shipPosition);
 
-    auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.2, 0.2, 0.2});
-    for (int i = 0; i < 50; i++) {
-        ex::Entity asteroidEntity = entities.create();
-        asteroidEntity.assign<vi::Model>(*m_visualScene.get(), vi::MeshPrimitive::lodSphere(), asteroidMaterial);
-        asteroidEntity.assign<PhysBody>(*m_physWorld.get(), CollisionSphere(*m_physWorld.get(), 1.0), 1.0, vec3d(0.3, 0.3, 0.3));
-        asteroidEntity.component<PhysBody>()->setPos(glm::ballRand(25.0));
-        //asteroidEntity.component<PhysBody>()->setVelocity(glm::ballRand(25.0));
-    }
+    //    auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.2, 0.2, 0.2});
+    //    for (int i = 0; i < 50; i++) {
+    //        ex::Entity asteroidEntity = entities.create();
+    //        asteroidEntity.assign<vi::Model>(m_data->visualScene, vi::MeshPrimitive::lodSphere(), asteroidMaterial);
+    //        asteroidEntity.assign<PhysBody>(m_data->physWorld, CollisionSphere(m_data->physWorld, 1.0), 1.0, vec3d(0.3, 0.3, 0.3));
+    //        asteroidEntity.component<PhysBody>()->setPos(glm::ballRand(25.0));
+    //    }
+    systems.update<RenderSystem>(0.0);
 }
 
 Game::~Game() {
@@ -141,22 +155,9 @@ Game::~Game() {
 
 void Game::update(double dt) {
     systems.update<ControlSystem>(dt);
-    static double k = 1.0, k2 = 1.0;
-    if (Control::pressed(Control::Button::S)) // sloooooow moooooootiooon
-        k -= 0.08;
-    else
-        k += 0.08;
-    k = glm::clamp(k, 0.1, 1.0);
+    m_data->physWorld.update(dt);
 
-    if (Control::pressed(Control::Button::D)) // sloooooow moooooootiooon
-        k2 *= 1.14;
-    else
-        k2 /= 1.14;
-
-    k2 = glm::clamp(k2, 1.0, 20.0);
-    m_physWorld->update(dt * k * k2);
-
-    entities.each<PhysBody, Control>([](ex::Entity e, PhysBody &pb, Control &ctrl) {
+    entities.each<PhysBody, Control>([](ex::Entity e, PhysBody &pb, Control &) {
         vec3d position = pb.getPos();
         ImGuiHelper::setShipCoordinates(position);
     });
@@ -164,7 +165,7 @@ void Game::update(double dt) {
 
 void Game::render(Visual::IFrameBuffer &frameBuffer) {
     systems.update<RenderSystem>(0.0);
-    m_renderer->draw(*m_visualScene, *m_camera, frameBuffer);
+    m_data->renderer.draw(m_data->visualScene, *m_data->camera, frameBuffer);
 }
 
 void Game::addObject() {

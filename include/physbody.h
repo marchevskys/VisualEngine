@@ -68,6 +68,7 @@ class PhysBody {
     void setMatrix(mat4d mat);
     void setVelocity(vec3d vel);
     void setOmega(vec3d vel);
+    bool isSleeping();
 
     vec3d getPos();
     mat4d getMatrix();

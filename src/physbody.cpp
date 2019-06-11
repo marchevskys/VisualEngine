@@ -164,6 +164,10 @@ void PhysBody::addTorque(vec3d torque) { data.torque += torque; }
 
 void PhysBody::setOmega(vec3d vel) { NewtonBodySetOmega(m_body, value_ptr(vel)); }
 
+bool PhysBody::isSleeping() {
+    return NewtonBodyGetSleepState(m_body);
+}
+
 vec3d PhysBody::getPos() {
     vec3d position;
     NewtonBodyGetPosition(m_body, value_ptr(position));
