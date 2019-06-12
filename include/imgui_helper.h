@@ -18,8 +18,8 @@ class ImGuiHelper {
     }
 
     static void drawWindow();
-    static void setShipCoordinates(const std::string &text) { m_text = text; }
-    static void setShipCoordinates(std::string &&text) { m_text = std::move(text); }
+    static void setText(const std::string &text) { m_text = text; }
+    static void setText(std::string &&text) { m_text = std::move(text); }
 
   private:
     static std::string m_text;
