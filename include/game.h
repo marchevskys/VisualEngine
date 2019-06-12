@@ -2,6 +2,7 @@
 #define GAME_H
 #include <entityx/entityx.h>
 #include <memory>
+#include <string>
 
 namespace Visual {
 class Scene;
@@ -22,16 +23,11 @@ class Game : public ex::EntityX {
 
     void update(double dt);
     void render(vi::IFrameBuffer &frameBuffer);
-    void addObject();
+
+    ex::Entity addObject(std::string command);
 
   private:
     std::unique_ptr<class GameData> m_data;
-    //    std::unique_ptr<vi::Scene> m_visualScene;
-    //    std::unique_ptr<vi::Renderer> m_renderer;
-    //    std::shared_ptr<vi::Camera> m_camera;
-    //    std::unique_ptr<PhysWorld> m_physWorld;
-    //    std::unique_ptr<Octree<class Container>> m_octree;
-    static constexpr double voxelSize = 100.;
 };
 
 #endif // GAME_H

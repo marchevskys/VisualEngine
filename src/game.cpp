@@ -24,11 +24,6 @@
 
 class Space {
   public:
-    struct Container {
-        Container(int) {}
-        Container() = default;
-    };
-
     struct Transform {
       public:
         Transform() : voxel(0), matrix(1) {}
@@ -45,7 +40,7 @@ class Space {
             voxel = static_cast<glm::ivec3>(vox);
             glm::vec3 offset = pos - vox * boxSize;
             matrix = static_cast<glm::mat4>(dmat);
-            matrix[4] = glm::vec4(offset, dmat[3][3]);
+            matrix[3] = glm::vec4(offset, dmat[3][3]);
         };
 
         void print() {
@@ -67,8 +62,35 @@ class Space {
         glm::mat4 matrix;
     };
 
-    static constexpr glm::dvec3 boxSize = glm::dvec3(100.);
-    static constexpr glm::dvec3 halfBoxSize = glm::dvec3(50.);
+    struct Container {
+        Container(int) {}
+        Container() = default;
+        bool empty() {
+            return staticEntities.empty() && dynamicEntities.empty();
+        }
+        std::vector<ex::Entity> staticEntities;
+        std::vector<ex::Entity> dynamicEntities;
+    };
+
+    void addEntity(ex::Entity &e, Transform pos) {
+        auto &place = m_tree(pos.voxel);
+        place.staticEntities.push_back(e);
+    }
+
+    void goOutOfContainer(glm::ivec3 pos) {
+        //        auto &container = m_tree(pos);
+        //        if (container.staticEntities.empty()) {
+        //            m_tree.erase(pos);
+        //        }
+        //
+        //        else
+        //            container.dynamicEntities.clear();
+    }
+
+#define BOXSIZE 100.
+    static constexpr glm::dvec3 boxSize = glm::dvec3(BOXSIZE);
+    static constexpr glm::dvec3 halfBoxSize = glm::dvec3(BOXSIZE / 2);
+#undef BOXSIZE
 
   private:
     Octree<Container> m_tree;
@@ -86,10 +108,18 @@ class GameData {
 struct RenderSystem : public ex::System<RenderSystem> {
     void update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt) override {
         es.each<Space::Transform, vi::Model>([dt](ex::Entity entity, Space::Transform &tr, vi::Model &model) {
-
+            model.setTransform(tr.matrix);
         });
     }
     std::vector<glm::mat4> localMatrices;
+};
+
+struct LogicSystem : public ex::System<LogicSystem> {
+    void update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt) override {
+        //        es.each<Space::Transform, vi::Model>([dt](ex::Entity entity, Space::Transform &tr, vi::Model &model) {
+        //            model.setTransform(tr.matrix);
+        //        });
+    }
 };
 
 struct POISystem : public ex::System<POISystem> {
@@ -119,7 +149,7 @@ struct ControlSystem : public ex::System<ControlSystem> {
             });
         };
 
-        es.each<Control, PhysBody>([dt, attract, this](ex::Entity entity, Control &control, PhysBody &body) {
+        es.each<Control, PhysBody, Space::Transform>([dt, attract, this](ex::Entity entity, Control &control, PhysBody &body, Space::Transform &transform) {
             glm::dvec3 forceDir(0, 0, 0);
             if (Control::pressed(Control::Button::Up))
                 forceDir += glm::dvec3(0, 1, 0);
@@ -152,7 +182,7 @@ struct ControlSystem : public ex::System<ControlSystem> {
             body.addForce(forceDir);
 
             float radius = cam->getDistance();
-            glm::vec3 pos = body.getPos();
+            glm::vec3 pos = transform.matrix[3];
 
             radius *= 1.0 + Control::scrollOffset() * 0.07;
             radius = glm::clamp(radius, 0.5f, 1000.0f);
@@ -178,40 +208,51 @@ Game::Game() {
     systems.configure();
 }
 
+entityx::Entity Game::addObject(std::string command) {
+    auto e = entities.create();
+    e.assign<Space::Transform>();
+
+    if (command == "SpaceShip") {
+        static auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{1.8, 0.8, 0.8});
+        e.assign<vi::Model>(m_data->visualScene, vi::MeshPrimitive::lodSphere(), sphereMaterial);
+        e.assign<PhysBody>(m_data->physWorld, CollisionSphere(m_data->physWorld, 1.0), 2.0, vec3d(0.6, 0.6, 0.6));
+        e.assign<Control>();
+        vec3d shipPosition = std::any_cast<vec3d>(Config::get()->get_option(Config::Option::ShipPosition));
+        e.component<PhysBody>()->setPos(shipPosition);
+    } else if (command == "Asteroid") {
+
+    } else {
+        THROW("BAD COMMAND");
+    }
+
+    return e;
+}
+
 void Game::loadLevel() {
 
-    auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{1.8, 0.8, 0.8});
-    ex::Entity sphereEntity = entities.create();
+    addObject("SpaceShip");
 
-    sphereEntity.assign<Space::Transform>();
-    sphereEntity.assign<vi::Model>(m_data->visualScene, vi::MeshPrimitive::lodSphere(), sphereMaterial);
-    sphereEntity.assign<PhysBody>(m_data->physWorld, CollisionSphere(m_data->physWorld, 1.0), 2.0, vec3d(0.6, 0.6, 0.6));
-    sphereEntity.assign<Control>();
-    vec3d shipPosition = std::any_cast<vec3d>(Config::get()->get_option(Config::Option::ShipPosition));
-    sphereEntity.component<PhysBody>()->setPos(shipPosition);
-
-    //    auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.2, 0.2, 0.2});
     //    for (int i = 0; i < 50; i++) {
+    //        auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.2, 0.2, 0.2});
     //        ex::Entity asteroidEntity = entities.create();
     //        asteroidEntity.assign<vi::Model>(m_data->visualScene, vi::MeshPrimitive::lodSphere(), asteroidMaterial);
     //        asteroidEntity.assign<PhysBody>(m_data->physWorld, CollisionSphere(m_data->physWorld, 1.0), 1.0, vec3d(0.3, 0.3, 0.3));
     //        asteroidEntity.component<PhysBody>()->setPos(glm::ballRand(25.0));
     //    }
-    systems.update<RenderSystem>(0.0);
+    systems.update_all(0.0);
 }
 
 void Game::update(double dt) {
 
-    entities.each<PhysBody, Control>([](ex::Entity e, PhysBody &pb, Control &) {
-        vec3d position = pb.getPos();
-        vec3d vel = pb.getVelocity();
-        std::string text(glm::to_string(position) + '\n' + glm::to_string(pb.getVelocity()));
+    entities.each<Space::Transform, Control>([](ex::Entity e, Space::Transform &pb, Control &) {
+        vec3d position = pb.matrix[3];
+        std::string text(glm::to_string(position) + '\n' + glm::to_string(pb.voxel));
         ImGuiHelper::setText(text);
     });
 
-    entities.each<PhysBody, vi::Model>([dt](ex::Entity entity, PhysBody &body, vi::Model &model) {
+    entities.each<Space::Transform, PhysBody>([dt](ex::Entity entity, Space::Transform &tr, PhysBody &body) {
         if (!body.isSleeping())
-            model.setTransform(body.getMatrix());
+            tr = Space::Transform(body.getMatrix());
     });
 
     systems.update<ControlSystem>(dt);
@@ -221,9 +262,6 @@ void Game::update(double dt) {
 void Game::render(Visual::IFrameBuffer &frameBuffer) {
     systems.update<RenderSystem>(0.0);
     m_data->renderer.draw(m_data->visualScene, *m_data->camera, frameBuffer);
-}
-
-void Game::addObject() {
 }
 
 Game::~Game() {
