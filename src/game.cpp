@@ -204,6 +204,7 @@ void Game::update(double dt) {
 
     entities.each<PhysBody, Control>([](ex::Entity e, PhysBody &pb, Control &) {
         vec3d position = pb.getPos();
+
         vec3d vel = pb.getVelocity();
         std::string text(glm::to_string(position) + '\n' + glm::to_string(pb.getVelocity()));
         ImGuiHelper::setText(text);
