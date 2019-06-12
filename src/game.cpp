@@ -22,9 +22,56 @@
 #include "Config.h"
 #include "imgui_helper.h"
 
-struct Container {
-    Container(int) {}
-    Container() = default;
+class Space {
+  public:
+    struct Container {
+        Container(int) {}
+        Container() = default;
+    };
+
+    struct Transform {
+      public:
+        Transform() : voxel(0), matrix(1) {}
+        Transform(const glm::dvec3 &pos) : matrix(1) {
+            auto vox = glm::floor((pos + halfBoxSize) / boxSize);
+            voxel = static_cast<glm::ivec3>(vox);
+            glm::vec3 offset = pos - vox * boxSize;
+            matrix = glm::translate(matrix, offset);
+        }
+
+        Transform(const glm::dmat4 &dmat) {
+            glm::dvec3 pos = dmat[3];
+            auto vox = glm::floor((pos + halfBoxSize) / boxSize);
+            voxel = static_cast<glm::ivec3>(vox);
+            glm::vec3 offset = pos - vox * boxSize;
+            matrix = static_cast<glm::mat4>(dmat);
+            matrix[4] = glm::vec4(offset, dmat[3][3]);
+        };
+
+        void print() {
+            std::cout << "Voxel: " << glm::to_string(voxel)
+                      << "  Local: " << glm::to_string(matrix) << std::endl;
+        }
+
+        static Transform toLocal(const glm::dmat4 &mat) {
+            return Transform(mat);
+        };
+
+        static glm::dmat4 toGlobal(const Transform &tr) {
+            glm::dmat4 res(tr.matrix);
+            res = glm::translate(res, glm::dvec3(tr.voxel) * Space::boxSize);
+            return res;
+        };
+
+        glm::ivec3 voxel;
+        glm::mat4 matrix;
+    };
+
+    static constexpr glm::dvec3 boxSize = glm::dvec3(100.);
+    static constexpr glm::dvec3 halfBoxSize = glm::dvec3(50.);
+
+  private:
+    Octree<Container> m_tree;
 };
 
 class GameData {
@@ -33,14 +80,20 @@ class GameData {
     vi::Renderer renderer;
     std::shared_ptr<vi::Camera> camera;
     PhysWorld physWorld;
-    Octree<Container> octree;
+    Space space;
 };
+
 struct RenderSystem : public ex::System<RenderSystem> {
     void update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt) override {
-        es.each<PhysBody, vi::Model>([dt](ex::Entity entity, PhysBody &body, vi::Model &model) {
-            if (!body.isSleeping())
-                model.setTransform(body.getMatrix());
+        es.each<Space::Transform, vi::Model>([dt](ex::Entity entity, Space::Transform &tr, vi::Model &model) {
+
         });
+    }
+    std::vector<glm::mat4> localMatrices;
+};
+
+struct POISystem : public ex::System<POISystem> {
+    void update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt) override {
     }
 };
 
@@ -130,6 +183,7 @@ void Game::loadLevel() {
     auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{1.8, 0.8, 0.8});
     ex::Entity sphereEntity = entities.create();
 
+    sphereEntity.assign<Space::Transform>();
     sphereEntity.assign<vi::Model>(m_data->visualScene, vi::MeshPrimitive::lodSphere(), sphereMaterial);
     sphereEntity.assign<PhysBody>(m_data->physWorld, CollisionSphere(m_data->physWorld, 1.0), 2.0, vec3d(0.6, 0.6, 0.6));
     sphereEntity.assign<Control>();
@@ -146,21 +200,22 @@ void Game::loadLevel() {
     systems.update<RenderSystem>(0.0);
 }
 
-Game::~Game() {
-    ex::ComponentHandle<PhysBody> body;
-    for (ex::Entity e : entities.entities_with_components(body)) {
-        e.component<PhysBody>().remove();
-    }
-}
-
 void Game::update(double dt) {
-    systems.update<ControlSystem>(dt);
-    m_data->physWorld.update(dt);
 
     entities.each<PhysBody, Control>([](ex::Entity e, PhysBody &pb, Control &) {
         vec3d position = pb.getPos();
-        ImGuiHelper::setShipCoordinates(position);
+        vec3d vel = pb.getVelocity();
+        std::string text(glm::to_string(position) + '\n' + glm::to_string(pb.getVelocity()));
+        ImGuiHelper::setText(text);
     });
+
+    entities.each<PhysBody, vi::Model>([dt](ex::Entity entity, PhysBody &body, vi::Model &model) {
+        if (!body.isSleeping())
+            model.setTransform(body.getMatrix());
+    });
+
+    systems.update<ControlSystem>(dt);
+    m_data->physWorld.update(dt);
 }
 
 void Game::render(Visual::IFrameBuffer &frameBuffer) {
@@ -169,4 +224,11 @@ void Game::render(Visual::IFrameBuffer &frameBuffer) {
 }
 
 void Game::addObject() {
+}
+
+Game::~Game() {
+    ex::ComponentHandle<PhysBody> body;
+    for (ex::Entity e : entities.entities_with_components(body)) {
+        e.component<PhysBody>().remove();
+    }
 }
