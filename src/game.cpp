@@ -247,6 +247,7 @@ void Game::update(double dt) {
     entities.each<Space::Transform, Control>([](ex::Entity e, Space::Transform &pb, Control &) {
         vec3d position = pb.matrix[3];
         std::string text(glm::to_string(position) + '\n' + glm::to_string(pb.voxel));
+
         ImGuiHelper::setText(text);
     });
 
