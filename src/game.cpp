@@ -7,7 +7,6 @@
 #include "mesh.h"
 #include "meshdata.h"
 #include "model.h"
-#include "octree.h"
 #include "physbody.h"
 #include "renderer.h"
 #include "scene.h"
@@ -16,8 +15,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/random.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/hash.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/string_cast.hpp>
+
+#include <unordered_map>
 
 #include "Config.h"
 #include "imgui_helper.h"
@@ -73,18 +75,18 @@ class Space {
     };
 
     void addEntity(ex::Entity &e, Transform pos) {
-        auto &place = m_tree(pos.voxel);
-        place.staticEntities.push_back(e);
+        //auto &place = m_tree(pos.voxel);
+        //place.staticEntities.push_back(e);
     }
 
     void goOutOfContainer(glm::ivec3 pos) {
-        //        auto &container = m_tree(pos);
-        //        if (container.staticEntities.empty()) {
-        //            m_tree.erase(pos);
-        //        }
-        //
-        //        else
-        //            container.dynamicEntities.clear();
+        auto found = m_tree.find(pos);
+        if (found != m_tree.end()) {
+            auto &container = found->second;
+            container.dynamicEntities.clear();
+            if (container.staticEntities.empty())
+                m_tree.erase(found);
+        }
     }
 
 #define BOXSIZE 100.
@@ -93,7 +95,8 @@ class Space {
 #undef BOXSIZE
 
   private:
-    Octree<Container> m_tree;
+    //Octree<Container> m_tree;
+    std::unordered_map<glm::ivec3, Container> m_tree;
 };
 
 class GameData {
@@ -106,121 +109,110 @@ class GameData {
 };
 
 struct RenderSystem : public ex::System<RenderSystem> {
-    void update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt) override {
-        es.each<Space::Transform, vi::Model>([dt](ex::Entity entity, Space::Transform &tr, vi::Model &model) {
+    void update(ex::EntityManager &es, ex::EventManager &, ex::TimeDelta) override {
+
+        es.each<Space::Transform, vi::Model>([&](ex::Entity, Space::Transform &tr, vi::Model &model) {
+            //auto mat = glm::translate(tr.matrix, glm::vec3((tr.voxel - currentVoxel) * 100));
             model.setTransform(tr.matrix);
         });
     }
     std::vector<glm::mat4> localMatrices;
 };
 
-struct LogicSystem : public ex::System<LogicSystem> {
-    void update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt) override {
-        //        es.each<Space::Transform, vi::Model>([dt](ex::Entity entity, Space::Transform &tr, vi::Model &model) {
-        //            model.setTransform(tr.matrix);
-        //        });
-    }
-};
-
 struct POISystem : public ex::System<POISystem> {
-    void update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt) override {
+    void update(ex::EntityManager &, ex::EventManager &, ex::TimeDelta) override {
     }
 };
 
-struct ControlSystem : public ex::System<ControlSystem> {
-    std::shared_ptr<vi::Camera> m_Camera;
-    ControlSystem(std::shared_ptr<vi::Camera> camera) : m_Camera(camera) {}
-
-    void update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt) override {
-        auto attract = [&es](ex::Entity e1, glm::dvec3 &forceDir, double k) {
-            auto comp1 = e1.component<PhysBody>();
-            glm::dvec3 pos1 = comp1.get()->getPos();
-
-            es.each<PhysBody>([&](ex::Entity e2, PhysBody &body) {
-                auto comp2 = e2.component<PhysBody>();
-                if (comp1 != comp2) {
-                    glm::dvec3 pos2 = comp2.get()->getPos();
-                    auto dist = glm::length(pos1 - pos2);
-                    glm::dvec3 force = k * (pos1 - pos2) / (dist * dist * dist);
-
-                    comp2.get()->addForce(force);
-                    comp1.get()->addForce(-force);
-                }
-            });
-        };
-
-        es.each<Control, PhysBody, Space::Transform>([dt, attract, this](ex::Entity entity, Control &control, PhysBody &body, Space::Transform &transform) {
-            glm::dvec3 forceDir(0, 0, 0);
-            if (Control::pressed(Control::Button::Up))
-                forceDir += glm::dvec3(0, 1, 0);
-            if (Control::pressed(Control::Button::Down))
-                forceDir += glm::dvec3(0, -1, 0);
-            if (Control::pressed(Control::Button::Left))
-                forceDir += glm::dvec3(-1, 0, 0);
-            if (Control::pressed(Control::Button::Right))
-                forceDir += glm::dvec3(1, 0, 0);
-            if (Control::pressed(Control::Button::A))
-                forceDir += glm::dvec3(0, 0, -1);
-            if (Control::pressed(Control::Button::Z))
-                forceDir += glm::dvec3(0, 0, 1);
-            if (Control::pressed(Control::Button::Space))
-                attract(entity, forceDir, 1000.0);
-            if (Control::pressed(Control::Button::Enter)) {
-                body.setVelocity(glm::vec3(0.));
-                body.setOmega(glm::vec3(0.));
+void Game::control() {
+    auto attract = [&](ex::Entity e1, glm::dvec3 &forceDir, double k) {
+        auto comp1 = e1.component<PhysBody>();
+        glm::dvec3 pos1 = comp1.get()->getPos();
+        entities.each<PhysBody>([&](ex::Entity e2, PhysBody &body) {
+            auto comp2 = e2.component<PhysBody>();
+            if (comp1 != comp2) {
+                glm::dvec3 pos2 = comp2.get()->getPos();
+                auto dist = glm::length(pos1 - pos2);
+                glm::dvec3 force = k * (pos1 - pos2) / (dist * dist * dist);
+                comp2.get()->addForce(force);
+                comp1.get()->addForce(-force);
             }
-
-            auto forceDirLength = glm::length(forceDir);
-            if (forceDirLength > 1.0)
-                forceDir /= forceDirLength;
-            forceDir *= 10.0;
-
-            vi::CameraRotateOmniDirect *cam = dynamic_cast<vi::CameraRotateOmniDirect *>(m_Camera.get());
-
-            glm::mat3 cameraTransform = glm::dmat3(glm::inverse(cam->getView<double>()));
-            forceDir = cameraTransform * forceDir;
-            body.addForce(forceDir);
-
-            float radius = cam->getDistance();
-            glm::vec3 pos = transform.matrix[3];
-
-            radius *= 1.0 + Control::scrollOffset() * 0.07;
-            radius = glm::clamp(radius, 0.5f, 1000.0f);
-            auto diff = Control::mousePos();
-            cam->update(pos, diff.x * 0.01f, -diff.y * 0.01f, radius);
         });
+    };
 
-        if (Control::pressed(Control::Button::F1))
-            Config::get()->set_option_value(Config::Option::ImGuiEnabled, true);
-        if (Control::pressed(Control::Button::F2))
-            Config::get()->set_option_value(Config::Option::ImGuiEnabled, false);
+    auto &body = *player.component<PhysBody>();
+    auto &transform = *player.component<Space::Transform>();
+
+    glm::dvec3 forceDir(0, 0, 0);
+    if (Control::pressed(Control::Button::Up))
+        forceDir += glm::dvec3(0, 1, 0);
+    if (Control::pressed(Control::Button::Down))
+        forceDir += glm::dvec3(0, -1, 0);
+    if (Control::pressed(Control::Button::Left))
+        forceDir += glm::dvec3(-1, 0, 0);
+    if (Control::pressed(Control::Button::Right))
+        forceDir += glm::dvec3(1, 0, 0);
+    if (Control::pressed(Control::Button::A))
+        forceDir += glm::dvec3(0, 0, -1);
+    if (Control::pressed(Control::Button::Z))
+        forceDir += glm::dvec3(0, 0, 1);
+    if (Control::pressed(Control::Button::D))
+        body.setOmega(glm::vec3(5.));
+    if (Control::pressed(Control::Button::Space))
+        attract(player, forceDir, 1000.0);
+    if (Control::pressed(Control::Button::Enter)) {
+        body.setVelocity(glm::vec3(0.));
+        body.setOmega(glm::vec3(0.));
     }
-};
+
+    auto forceDirLength = glm::length(forceDir);
+    if (forceDirLength > 1.0)
+        forceDir /= forceDirLength;
+    forceDir *= 30.0;
+
+    vi::CameraRotateOmniDirect *cam = dynamic_cast<vi::CameraRotateOmniDirect *>(m_data->camera.get());
+
+    glm::mat3 cameraTransform = glm::dmat3(glm::inverse(cam->getView<double>()));
+    forceDir = cameraTransform * forceDir;
+    body.addForce(forceDir);
+
+    float radius = cam->getDistance();
+    glm::vec3 pos = transform.matrix[3];
+
+    radius *= 1.0 + Control::scrollOffset() * 0.07;
+    radius = glm::clamp(radius, 0.5f, 1000.0f);
+    auto diff = Control::mousePos();
+    cam->update(pos, diff.x * 0.01f, -diff.y * 0.01f, radius);
+
+    if (Control::pressed(Control::Button::F1))
+        Config::get()->set_option_value(Config::Option::ImGuiEnabled, true);
+    if (Control::pressed(Control::Button::F2))
+        Config::get()->set_option_value(Config::Option::ImGuiEnabled, false);
+}
 
 Game::Game() {
+    Control(); // initialize control keymap
     m_data = std::make_unique<GameData>();
-
     m_data->camera = std::make_shared<vi::CameraRotateOmniDirect>(glm::vec3(0, 1, 0), glm::vec3(0, 0, 0));
     m_data->camera->setFOV(1.6f);
-
     systems.add<RenderSystem>();
-    systems.add<ControlSystem>(m_data->camera);
     systems.configure();
 }
 
 entityx::Entity Game::addObject(std::string command) {
     auto e = entities.create();
     e.assign<Space::Transform>();
-
     if (command == "SpaceShip") {
         static auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{1.8, 0.8, 0.8});
         e.assign<vi::Model>(m_data->visualScene, vi::MeshPrimitive::lodSphere(), sphereMaterial);
         e.assign<PhysBody>(m_data->physWorld, CollisionSphere(m_data->physWorld, 1.0), 2.0, vec3d(0.6, 0.6, 0.6));
-        e.assign<Control>();
         vec3d shipPosition = std::any_cast<vec3d>(Config::get()->get_option(Config::Option::ShipPosition));
         e.component<PhysBody>()->setPos(shipPosition);
     } else if (command == "Asteroid") {
-
+        static auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.2, 0.2, 0.2});
+        e.assign<vi::Model>(m_data->visualScene, vi::MeshPrimitive::lodSphere(), asteroidMaterial);
+        e.assign<PhysBody>(m_data->physWorld, CollisionSphere(m_data->physWorld, 1.0), 1.0, vec3d(0.3, 0.3, 0.3));
+        e.component<PhysBody>()->setPos(glm::ballRand(25.0));
     } else {
         THROW("BAD COMMAND");
     }
@@ -229,34 +221,24 @@ entityx::Entity Game::addObject(std::string command) {
 }
 
 void Game::loadLevel() {
-
-    addObject("SpaceShip");
-
-    //    for (int i = 0; i < 50; i++) {
-    //        auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.2, 0.2, 0.2});
-    //        ex::Entity asteroidEntity = entities.create();
-    //        asteroidEntity.assign<vi::Model>(m_data->visualScene, vi::MeshPrimitive::lodSphere(), asteroidMaterial);
-    //        asteroidEntity.assign<PhysBody>(m_data->physWorld, CollisionSphere(m_data->physWorld, 1.0), 1.0, vec3d(0.3, 0.3, 0.3));
-    //        asteroidEntity.component<PhysBody>()->setPos(glm::ballRand(25.0));
-    //    }
+    player = addObject("SpaceShip");
+    for (int i = 0; i < 50; i++)
+        addObject("Asteroid");
     systems.update_all(0.0);
 }
 
 void Game::update(double dt) {
-
-    entities.each<Space::Transform, Control>([](ex::Entity e, Space::Transform &pb, Control &) {
-        vec3d position = pb.matrix[3];
-        std::string text(glm::to_string(position) + '\n' + glm::to_string(pb.voxel));
-
-        ImGuiHelper::setText(text);
-    });
+    auto tr = player.component<Space::Transform>();
+    vec3d position = tr->matrix[3];
+    std::string text(glm::to_string(position) + '\n' + glm::to_string(tr->voxel));
+    ImGuiHelper::setText(text);
 
     entities.each<Space::Transform, PhysBody>([dt](ex::Entity entity, Space::Transform &tr, PhysBody &body) {
         if (!body.isSleeping())
             tr = Space::Transform(body.getMatrix());
     });
 
-    systems.update<ControlSystem>(dt);
+    control();
     m_data->physWorld.update(dt);
 }
 

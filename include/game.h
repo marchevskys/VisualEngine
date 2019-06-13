@@ -23,10 +23,12 @@ class Game : public ex::EntityX {
 
     void update(double dt);
     void render(vi::IFrameBuffer &frameBuffer);
+    void control();
 
     ex::Entity addObject(std::string command);
 
   private:
+    ex::Entity player;
     std::unique_ptr<class GameData> m_data;
 };
 
