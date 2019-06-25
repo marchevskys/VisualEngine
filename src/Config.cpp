@@ -1,6 +1,5 @@
 
 #include "Config.h"
-#include "physbody.h"
 
 Config* Config::get() {
    static Config config;
@@ -16,14 +15,6 @@ Config::Config() {
 Config::~Config() {
    m_config.clear();
    m_listeners.clear();
-}
-
-void Config::set_option_value(Option option, const std::any& value) {
-   m_config.insert_or_assign(option, value);
-   if (m_listeners.find(option) != m_listeners.end()) {
-      auto f = m_listeners[option];
-      f(value);
-   }
 }
 
 void Config::add_listener(Option option, cb_function cb) {

@@ -206,7 +206,7 @@ entityx::Entity Game::addObject(std::string command) {
         static auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{1.8, 0.8, 0.8});
         e.assign<vi::Model>(m_data->visualScene, vi::MeshPrimitive::lodSphere(), sphereMaterial);
         e.assign<PhysBody>(m_data->physWorld, CollisionSphere(m_data->physWorld, 1.0), 2.0, vec3d(0.6, 0.6, 0.6));
-        vec3d shipPosition = std::any_cast<vec3d>(Config::get()->get_option(Config::Option::ShipPosition));
+        vec3d shipPosition = Config::get()->get_option<vec3d>(Config::Option::ShipPosition);
         e.component<PhysBody>()->setPos(shipPosition);
     } else if (command == "Asteroid") {
         static auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.2, 0.2, 0.2});

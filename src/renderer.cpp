@@ -207,8 +207,7 @@ void Renderer::draw(const Scene &scene, Camera &camera, const IFrameBuffer &wind
 
 Renderer::Renderer() {
     m_renderData.reset(new RenderData);
-    std::any enabled = Config::get()->get_option(Config::Option::ImGuiEnabled);
-    m_imGuiEnabled = std::any_cast<bool>(enabled);
+    m_imGuiEnabled = Config::get()->get_option<bool>(Config::Option::ImGuiEnabled);
     Config::get()->add_listener(Config::Option::ImGuiEnabled, [this](std::any imgui_enabled) { m_imGuiEnabled = std::any_cast<bool>(imgui_enabled); });
 }
 
