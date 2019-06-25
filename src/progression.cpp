@@ -34,7 +34,7 @@ namespace Gameplay {
       sphereEntity.assign<vi::Model>(scene, vi::MeshPrimitive::lodSphere(), sphereMaterial);
       sphereEntity.assign<PhysBody>(world, CollisionSphere(world, 1.0), 2.0, vec3d(0.6, 0.6, 0.6));
       sphereEntity.assign<Control>();
-      vec3d shipPosition = std::any_cast<vec3d>(Config::get()->get_option(Config::Option::ShipPosition));
+      vec3d shipPosition = Config::get()->get_option<vec3d>(Config::Option::ShipPosition);
       sphereEntity.component<PhysBody>()->setPos(shipPosition);
    }
 
