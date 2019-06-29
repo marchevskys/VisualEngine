@@ -17,6 +17,7 @@ class PhysWorld;
 
 class Game : public ex::EntityX {
   public:
+    friend class Generator;
     Game();
     void loadLevel();
     ~Game();

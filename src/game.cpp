@@ -89,10 +89,9 @@ class Space {
         }
     }
 
-#define BOXSIZE 100.
+    static constexpr double BOXSIZE = 100.;
     static constexpr glm::dvec3 boxSize = glm::dvec3(BOXSIZE);
     static constexpr glm::dvec3 halfBoxSize = glm::dvec3(BOXSIZE / 2);
-#undef BOXSIZE
 
   private:
     //Octree<Container> m_tree;
@@ -188,31 +187,40 @@ Game::Game() {
     systems.configure();
 }
 
-entityx::Entity Game::addObject(std::string command) {
-    auto e = entities.create();
-    e.assign<Space::Transform>();
-    if (command == "SpaceShip") {
-        static auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{1.8, 0.8, 0.8});
-        e.assign<vi::Model>(m_data->visualScene, vi::MeshPrimitive::lodSphere(), sphereMaterial);
-        e.assign<PhysBody>(m_data->physWorld, CollisionSphere(m_data->physWorld, 1.0), 2.0, vec3d(0.6, 0.6, 0.6));
-        vec3d shipPosition = Config::get()->get_option<vec3d>(Config::Option::ShipPosition);
-        e.component<PhysBody>()->setPos(shipPosition);
-    } else if (command == "Asteroid") {
-        static auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.2, 0.2, 0.2});
-        e.assign<vi::Model>(m_data->visualScene, vi::MeshPrimitive::lodSphere(), asteroidMaterial);
-        e.assign<PhysBody>(m_data->physWorld, CollisionSphere(m_data->physWorld, 1.0), 1.0, vec3d(0.3, 0.3, 0.3));
-        e.component<PhysBody>()->setPos(glm::ballRand(25.0));
-    } else {
-        THROW("BAD COMMAND");
+class Generator {
+  public:
+    Generator() = delete;
+
+    static entityx::Entity generateShip(Game& game, const glm::vec3& position) {
+       ex::Entity e = game.entities.create();
+       e.assign<Space::Transform>();
+       static auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{1.8, 0.8, 0.8});
+       e.assign<vi::Model>(game.m_data->visualScene, vi::MeshPrimitive::lodSphere(), sphereMaterial);
+       e.assign<PhysBody>(game.m_data->physWorld, CollisionSphere(game.m_data->physWorld, 1.0),
+                          2.0, vec3d(0.6, 0.6, 0.6));
+       e.component<PhysBody>()->setPos(position);
+       return e;
     }
 
-    return e;
-}
+    static entityx::Entity generateAsteroid(Game& game, const glm::ivec3& voxel) {
+        ex::Entity e = game.entities.create();
+        e.assign<Space::Transform>();
+        static auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.2, 0.2, 0.2});
+        e.assign<vi::Model>(game.m_data->visualScene, vi::MeshPrimitive::lodSphere(), asteroidMaterial);
+        glm::mat4 mat(1);
+        mat = glm::translate(glm::ballRand(Space::BOXSIZE));
+        e.component<Space::Transform>()->matrix = mat;
+        e.component<Space::Transform>()->voxel = voxel;
+        return e;
+    }
+};
 
 void Game::loadLevel() {
-    player = addObject("SpaceShip");
+    const glm::vec3 spaceShipPosition = glm::vec3(0.);
+    const glm::ivec3 currentVoxel {0, 0, 0};
+    player = Generator::generateShip(*this, spaceShipPosition);
     for (int i = 0; i < 50; i++)
-        addObject("Asteroid");
+        Generator::generateAsteroid(*this, currentVoxel);
     systems.update_all(0.0);
 }
 
