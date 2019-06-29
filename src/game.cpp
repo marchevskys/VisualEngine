@@ -108,17 +108,6 @@ class GameData {
     Space space;
 };
 
-struct RenderSystem : public ex::System<RenderSystem> {
-    void update(ex::EntityManager &es, ex::EventManager &, ex::TimeDelta) override {
-
-        es.each<Space::Transform, vi::Model>([&](ex::Entity, Space::Transform &tr, vi::Model &model) {
-            //auto mat = glm::translate(tr.matrix, glm::vec3((tr.voxel - currentVoxel) * 100));
-            model.setTransform(tr.matrix);
-        });
-    }
-    std::vector<glm::mat4> localMatrices;
-};
-
 struct POISystem : public ex::System<POISystem> {
     void update(ex::EntityManager &, ex::EventManager &, ex::TimeDelta) override {
     }
@@ -195,7 +184,7 @@ Game::Game() {
     m_data = std::make_unique<GameData>();
     m_data->camera = std::make_shared<vi::CameraRotateOmniDirect>(glm::vec3(0, 1, 0), glm::vec3(0, 0, 0));
     m_data->camera->setFOV(1.6f);
-    systems.add<RenderSystem>();
+    //systems.add<RenderSystem>();
     systems.configure();
 }
 
@@ -243,7 +232,14 @@ void Game::update(double dt) {
 }
 
 void Game::render(Visual::IFrameBuffer &frameBuffer) {
-    systems.update<RenderSystem>(0.0);
+
+    const auto &currentVoxel = player.component<Space::Transform>()->voxel;
+
+    entities.each<Space::Transform, vi::Model>([&](ex::Entity, Space::Transform &tr, vi::Model &model) {
+        auto mat = glm::translate(tr.matrix, glm::vec3((tr.voxel - currentVoxel) * 100));
+        model.setTransform(mat);
+    });
+
     m_data->renderer.draw(m_data->visualScene, *m_data->camera, frameBuffer);
 }
 
