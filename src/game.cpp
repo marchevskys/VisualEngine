@@ -180,7 +180,7 @@ void Game::control() {
 
 Game::Game() {
     Control(); // initialize control keymap
-    m_data = std::make_unique<GameData>();
+    m_data = std::make_shared<GameData>();
     m_data->camera = std::make_shared<vi::CameraRotateOmniDirect>(glm::vec3(0, 1, 0), glm::vec3(0, 0, 0));
     m_data->camera->setFOV(1.6f);
     //systems.add<RenderSystem>();
@@ -195,8 +195,8 @@ class Generator {
        ex::Entity e = game.entities.create();
        e.assign<Space::Transform>();
        static auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{1.8, 0.8, 0.8});
-       e.assign<vi::Model>(game.m_data->visualScene, vi::MeshPrimitive::lodSphere(), sphereMaterial);
-       e.assign<PhysBody>(game.m_data->physWorld, CollisionSphere(game.m_data->physWorld, 1.0),
+       e.assign<vi::Model>(game.getGameData()->visualScene, vi::MeshPrimitive::lodSphere(), sphereMaterial);
+       e.assign<PhysBody>(game.getGameData()->physWorld, CollisionSphere(game.getGameData()->physWorld, 1.0),
                           2.0, vec3d(0.6, 0.6, 0.6));
        e.component<PhysBody>()->setPos(position);
        return e;
@@ -206,7 +206,7 @@ class Generator {
         ex::Entity e = game.entities.create();
         e.assign<Space::Transform>();
         static auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.2, 0.2, 0.2});
-        e.assign<vi::Model>(game.m_data->visualScene, vi::MeshPrimitive::lodSphere(), asteroidMaterial);
+        e.assign<vi::Model>(game.getGameData()->visualScene, vi::MeshPrimitive::lodSphere(), asteroidMaterial);
         glm::mat4 mat(1);
         mat = glm::translate(glm::ballRand(Space::BOXSIZE));
         e.component<Space::Transform>()->matrix = mat;
@@ -256,4 +256,8 @@ Game::~Game() {
     for (ex::Entity e : entities.entities_with_components(body)) {
         e.component<PhysBody>().remove();
     }
+}
+
+std::shared_ptr<GameData> Game::getGameData() const {
+   return m_data;
 }

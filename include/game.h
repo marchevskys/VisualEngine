@@ -3,6 +3,7 @@
 #include <entityx/entityx.h>
 #include <memory>
 #include <string>
+#include "LevelLoader.h"
 
 namespace Visual {
 class Scene;
@@ -17,7 +18,6 @@ class PhysWorld;
 
 class Game : public ex::EntityX {
   public:
-    friend class Generator;
     Game();
     void loadLevel();
     ~Game();
@@ -27,10 +27,10 @@ class Game : public ex::EntityX {
     void control();
 
     ex::Entity addObject(std::string command);
-
+    std::shared_ptr<class GameData> getGameData() const;
   private:
     ex::Entity player;
-    std::unique_ptr<class GameData> m_data;
+    std::shared_ptr<class GameData> m_data;
 };
 
 #endif // GAME_H
