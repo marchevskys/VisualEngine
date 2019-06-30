@@ -63,37 +63,46 @@ endif()
 add_executable(${PROJECT_NAME} ${SRC_LIST} ${SHADER_FILES})
 add_subdirectory(imgui)
 
-SET(SHADERS_DIRECTORY shaders)
+SET(SHADERS_DIRECTORY src/shaders)
 SET(MODELS_DIRECTORY models3d)
-SET(COPY_SOURCE1 "${CMAKE_SOURCE_DIR}/src/${SHADERS_DIRECTORY}")
-SET(COPY_SOURCE2 "${CMAKE_SOURCE_DIR}/${MODELS_DIRECTORY}")
-
-SET(COPY_DEST "${CMAKE_CURRENT_BINARY_DIR}")
+SET(LEVELS_DIRECTORY levels)
 
 add_custom_command(
     TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${COPY_SOURCE1}
-            ${COPY_DEST}/${SHADERS_DIRECTORY})
+            ${CMAKE_SOURCE_DIR}/${SHADERS_DIRECTORY}
+            ${CMAKE_CURRENT_BINARY_DIR}/${SHADERS_DIRECTORY})
 
 add_custom_command(
     TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${COPY_SOURCE2}
-            ${COPY_DEST}/${MODELS_DIRECTORY})
+            ${CMAKE_SOURCE_DIR}/${MODELS_DIRECTORY}
+            ${CMAKE_CURRENT_BINARY_DIR}/${MODELS_DIRECTORY})
+            
+add_custom_command(
+    TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/${LEVELS_DIRECTORY}
+            ${CMAKE_CURRENT_BINARY_DIR}/${LEVELS_DIRECTORY})
 
 if (WIN32)
 add_custom_command(
     TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${COPY_SOURCE1}
+            ${CMAKE_SOURCE_DIR}/${SHADERS_DIRECTORY}
             ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/${SHADERS_DIRECTORY})
 
 add_custom_command(
     TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${COPY_SOURCE2}
+            ${CMAKE_SOURCE_DIR}/${MODELS_DIRECTORY}
             ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/${MODELS_DIRECTORY})
+
+add_custom_command(
+    TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/${LEVELS_DIRECTORY}
+            ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/${LEVELS_DIRECTORY})
 endif()
 
 if (WIN32)

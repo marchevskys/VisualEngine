@@ -24,88 +24,10 @@
 #include "Config.h"
 #include "imgui_helper.h"
 
-class Space {
-  public:
-    struct Transform {
-      public:
-        Transform() : voxel(0), matrix(1) {}
-        Transform(const glm::dvec3 &pos) : matrix(1) {
-            auto vox = glm::floor((pos + halfBoxSize) / boxSize);
-            voxel = static_cast<glm::ivec3>(vox);
-            glm::vec3 offset = pos - vox * boxSize;
-            matrix = glm::translate(matrix, offset);
-        }
+#include "space.h"
+#include "Generator.h"
 
-        Transform(const glm::dmat4 &dmat) {
-            glm::dvec3 pos = dmat[3];
-            auto vox = glm::floor((pos + halfBoxSize) / boxSize);
-            voxel = static_cast<glm::ivec3>(vox);
-            glm::vec3 offset = pos - vox * boxSize;
-            matrix = static_cast<glm::mat4>(dmat);
-            matrix[3] = glm::vec4(offset, dmat[3][3]);
-        };
 
-        void print() {
-            std::cout << "Voxel: " << glm::to_string(voxel)
-                      << "  Local: " << glm::to_string(matrix) << std::endl;
-        }
-
-        static Transform toLocal(const glm::dmat4 &mat) {
-            return Transform(mat);
-        };
-
-        static glm::dmat4 toGlobal(const Transform &tr) {
-            glm::dmat4 res(tr.matrix);
-            res = glm::translate(res, glm::dvec3(tr.voxel) * Space::boxSize);
-            return res;
-        };
-
-        glm::ivec3 voxel;
-        glm::mat4 matrix;
-    };
-
-    struct Container {
-        Container(int) {}
-        Container() = default;
-        bool empty() {
-            return staticEntities.empty() && dynamicEntities.empty();
-        }
-        std::vector<ex::Entity> staticEntities;
-        std::vector<ex::Entity> dynamicEntities;
-    };
-
-    void addEntity(ex::Entity &e, Transform pos) {
-        //auto &place = m_tree(pos.voxel);
-        //place.staticEntities.push_back(e);
-    }
-
-    void goOutOfContainer(glm::ivec3 pos) {
-        auto found = m_tree.find(pos);
-        if (found != m_tree.end()) {
-            auto &container = found->second;
-            container.dynamicEntities.clear();
-            if (container.staticEntities.empty())
-                m_tree.erase(found);
-        }
-    }
-
-    static constexpr double BOXSIZE = 100.;
-    static constexpr glm::dvec3 boxSize = glm::dvec3(BOXSIZE);
-    static constexpr glm::dvec3 halfBoxSize = glm::dvec3(BOXSIZE / 2);
-
-  private:
-    //Octree<Container> m_tree;
-    std::unordered_map<glm::ivec3, Container> m_tree;
-};
-
-class GameData {
-  public:
-    vi::Scene visualScene;
-    vi::Renderer renderer;
-    std::shared_ptr<vi::Camera> camera;
-    PhysWorld physWorld;
-    Space space;
-};
 
 struct POISystem : public ex::System<POISystem> {
     void update(ex::EntityManager &, ex::EventManager &, ex::TimeDelta) override {
@@ -178,7 +100,9 @@ void Game::control() {
         Config::get()->set_option_value(Config::Option::ImGuiEnabled, false);
 }
 
-Game::Game() {
+Game::Game() 
+    : m_levelloader(*this) 
+{
     Control(); // initialize control keymap
     m_data = std::make_shared<GameData>();
     m_data->camera = std::make_shared<vi::CameraRotateOmniDirect>(glm::vec3(0, 1, 0), glm::vec3(0, 0, 0));
@@ -187,40 +111,13 @@ Game::Game() {
     systems.configure();
 }
 
-class Generator {
-  public:
-    Generator() = delete;
-
-    static entityx::Entity generateShip(Game& game, const glm::vec3& position) {
-       ex::Entity e = game.entities.create();
-       e.assign<Space::Transform>();
-       static auto sphereMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{1.8, 0.8, 0.8});
-       e.assign<vi::Model>(game.getGameData()->visualScene, vi::MeshPrimitive::lodSphere(), sphereMaterial);
-       e.assign<PhysBody>(game.getGameData()->physWorld, CollisionSphere(game.getGameData()->physWorld, 1.0),
-                          2.0, vec3d(0.6, 0.6, 0.6));
-       e.component<PhysBody>()->setPos(position);
-       return e;
-    }
-
-    static entityx::Entity generateAsteroid(Game& game, const glm::ivec3& voxel) {
-        ex::Entity e = game.entities.create();
-        e.assign<Space::Transform>();
-        static auto asteroidMaterial = std::make_shared<vi::MaterialPBR>(vi::Color{0.2, 0.2, 0.2});
-        e.assign<vi::Model>(game.getGameData()->visualScene, vi::MeshPrimitive::lodSphere(), asteroidMaterial);
-        glm::mat4 mat(1);
-        mat = glm::translate(glm::ballRand(Space::BOXSIZE));
-        e.component<Space::Transform>()->matrix = mat;
-        e.component<Space::Transform>()->voxel = voxel;
-        return e;
-    }
-};
-
 void Game::loadLevel() {
-    const glm::vec3 spaceShipPosition = glm::vec3(0.);
-    const glm::ivec3 currentVoxel {0, 0, 0};
-    player = Generator::generateShip(*this, spaceShipPosition);
-    for (int i = 0; i < 50; i++)
-        Generator::generateAsteroid(*this, currentVoxel);
+    player = m_levelloader.tryLoadLevel("levels/level1.lvl");
+    //const glm::vec3 spaceShipPosition = glm::vec3(0.);
+    //const glm::ivec3 currentVoxel {0, 0, 0};
+    //player = Generator::generateShip(*this, spaceShipPosition);
+    //for (int i = 0; i < 50; i++)
+    //    Generator::generateAsteroid(*this, currentVoxel);
     systems.update_all(0.0);
 }
 

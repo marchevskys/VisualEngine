@@ -4,13 +4,13 @@
 #include <memory>
 #include <string>
 #include "LevelLoader.h"
+#include "scene.h"
+#include "camera.h"
+#include "renderer.h"
+#include "framebuffer.h"
+#include "space.h"
+#include "physbody.h"
 
-namespace Visual {
-class Scene;
-class Camera;
-class Renderer;
-class IFrameBuffer;
-} // namespace Visual
 namespace ex = entityx;
 namespace vi = Visual;
 
@@ -31,6 +31,16 @@ class Game : public ex::EntityX {
   private:
     ex::Entity player;
     std::shared_ptr<class GameData> m_data;
+    LevelLoader m_levelloader;
+};
+
+class GameData {
+  public:
+    vi::Scene visualScene;
+    vi::Renderer renderer;
+    std::shared_ptr<vi::Camera> camera;
+    PhysWorld physWorld;
+    Space space;
 };
 
 #endif // GAME_H

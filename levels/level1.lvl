@@ -1,0 +1,9 @@
+ {
+    "level": 0,
+    "difficulcity": 0,
+    "spaceshipposition": {
+        "voxel": [0,0,0],
+        "pos": [10,0,21]
+    },
+    "asteroiddensity": 5
+}
