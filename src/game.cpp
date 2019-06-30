@@ -25,7 +25,7 @@
 #include "imgui_helper.h"
 
 #include "space.h"
-#include "Generator.h"
+#include "generator.h"
 
 
 

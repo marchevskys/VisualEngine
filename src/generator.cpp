@@ -1,4 +1,4 @@
-#include "Generator.h"
+#include "generator.h"
 #include "physbody.h"
 #include "game.h"
 #include "model.h"
